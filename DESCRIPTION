@@ -1,0 +1,14 @@
+Package: ShinyBaseball
+Type: Package
+Title: Shiny Baseball Applications
+Version: 0.1.0
+Author: Jim Albert
+VignetteBuilder: knitr
+Suggests: 
+Imports:  ggplot2, shiny, dplyr
+Maintainer: Jim Albert <albert@bgsu.edu>
+URL: https://github.com/bayesball/ShinyBaseball
+Description: A collection of Shiny functions useful for exploring baseball data.
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
