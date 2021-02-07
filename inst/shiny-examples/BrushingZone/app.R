@@ -1,6 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
+library(stringr)
 
 ui <- fluidPage(
   theme = shinythemes::shinytheme("slate"),
@@ -56,7 +57,8 @@ server <- function(input, output, session) {
         hjust = 0.5, vjust = 0.8, angle = 0))
     }
 #    sc <- the_data()
-    mytitle <- paste(input$name, "-", input$measure)
+    mytitle <- paste(str_squish(input$name),
+                     "-", input$measure)
     th1 <- theme(plot.background =
                    element_rect(fill = "chocolate4"),
                  axis.text = element_text(colour = "white"),
@@ -65,7 +67,7 @@ server <- function(input, output, session) {
     if(input$measure == "Hit"){
     ggplot() +
       geom_point(data = filter(sc2019_ip,
-                          player_name == input$name),
+              player_name == str_squish(input$name)),
                  aes(plate_x, plate_z, color = H)) +
       add_zone() +
       ggtitle(mytitle) +
@@ -76,7 +78,7 @@ server <- function(input, output, session) {
     } else if(input$measure == "Home Run"){
       ggplot() +
         geom_point(data = filter(sc2019_ip,
-                                 player_name == input$name),
+                  player_name == str_squish(input$name)),
                    aes(plate_x, plate_z, color = HR)) +
         add_zone() +
         ggtitle(mytitle) +
@@ -87,7 +89,7 @@ server <- function(input, output, session) {
     } else if(input$measure == "Launch Speed"){
       ggplot() +
         geom_point(data = filter(sc2019_ip,
-                    player_name == input$name),
+                player_name == str_squish(input$name)),
                    aes(plate_x, plate_z,
                        color = launch_speed)) +
         add_zone() +
@@ -98,7 +100,7 @@ server <- function(input, output, session) {
     } else if(input$measure == "Expected BA"){
       ggplot() +
         geom_point(data = filter(sc2019_ip,
-                                 player_name == input$name),
+                player_name == str_squish(input$name)),
                    aes(plate_x, plate_z,
                        color = estimated_ba)) +
         add_zone() +
@@ -113,9 +115,9 @@ server <- function(input, output, session) {
     req(input$plot_brush)
 #    sc <- the_data()
     sc1 <- brushedPoints(filter(sc2019_ip,
-                      player_name == input$name),
+                player_name == str_squish(input$name)),
                       input$plot_brush)
-    data.frame(Name = input$name,
+    data.frame(Name = str_squish(input$name),
                BIP = nrow(sc1),
                H = sum(sc1$H),
                HR = sum(sc1$HR),
@@ -123,7 +125,7 @@ server <- function(input, output, session) {
                  mean(sc1$launch_speed),
                H_Rate = sum(sc1$H) / nrow(sc1),
                HR_Rate = sum(sc1$HR) / nrow(sc1),
-               E_BA = mean(sc1$estimated_ba))
+               xBA = mean(sc1$estimated_ba))
   }, digits = 3, width = '75%', align = 'c',
   bordered = TRUE,
   caption = "Brushed Region Stats")
