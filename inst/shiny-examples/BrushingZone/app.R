@@ -10,16 +10,19 @@ ui <- fluidPage(
 #  fileInput("file1", "Read in Statcast CSV File",
 #            accept = ".csv"),
 #  checkboxInput("header", "Header", TRUE),
-  textInput("name", "Batter Name:", value = ""),
+  textInput("name", "Batter Name:",
+            value = ""),
   radioButtons("measure", "Measure:",
                c("Launch Speed",
-                 "Hit", "Home Run"),
+                 "Hit", "Home Run",
+                 "Expected BA"),
                inline = FALSE)
   )),
   column(8,
          plotOutput("plot", brush =
               brushOpts("plot_brush",
-                        fill = "#0000ff")),
+                        fill = "#0000ff"),
+              width = '440px'),
          tableOutput("data")
          )
 )
@@ -49,11 +52,16 @@ server <- function(input, output, session) {
     }
     centertitle <- function(){
       theme(plot.title = element_text(
-        colour = "blue", size = 18,
+        colour = "white", size = 18,
         hjust = 0.5, vjust = 0.8, angle = 0))
     }
 #    sc <- the_data()
     mytitle <- paste(input$name, "-", input$measure)
+    th1 <- theme(plot.background =
+                   element_rect(fill = "chocolate4"),
+                 axis.text = element_text(colour = "white"),
+                 axis.title = element_text(colour = "white"))
+
     if(input$measure == "Hit"){
     ggplot() +
       geom_point(data = filter(sc2019_ip,
@@ -63,7 +71,7 @@ server <- function(input, output, session) {
       ggtitle(mytitle) +
       scale_colour_manual(values =
                    c("tan", "red")) +
-      centertitle() +
+      centertitle() + th1 +
       coord_equal()
     } else if(input$measure == "Home Run"){
       ggplot() +
@@ -74,17 +82,28 @@ server <- function(input, output, session) {
         ggtitle(mytitle) +
         scale_colour_manual(values =
                   c("tan", "red")) +
-        centertitle() +
+        centertitle() + th1 +
         coord_equal()
     } else if(input$measure == "Launch Speed"){
       ggplot() +
         geom_point(data = filter(sc2019_ip,
-                                 player_name == input$name),
+                    player_name == input$name),
                    aes(plate_x, plate_z,
                        color = launch_speed)) +
         add_zone() +
         ggtitle(mytitle) +
-        centertitle() +
+        centertitle() + th1 +
+        coord_equal() +
+        scale_color_distiller(palette="RdYlBu")
+    } else if(input$measure == "Expected BA"){
+      ggplot() +
+        geom_point(data = filter(sc2019_ip,
+                                 player_name == input$name),
+                   aes(plate_x, plate_z,
+                       color = estimated_ba)) +
+        add_zone() +
+        ggtitle(mytitle) +
+        centertitle() + th1 +
         coord_equal() +
         scale_color_distiller(palette="RdYlBu")
     }
@@ -100,10 +119,11 @@ server <- function(input, output, session) {
                BIP = nrow(sc1),
                H = sum(sc1$H),
                HR = sum(sc1$HR),
-               Launch_Speed =
+               LS =
                  mean(sc1$launch_speed),
                H_Rate = sum(sc1$H) / nrow(sc1),
-               HR_Rate = sum(sc1$HR) / nrow(sc1))
+               HR_Rate = sum(sc1$HR) / nrow(sc1),
+               E_BA = mean(sc1$estimated_ba))
   }, digits = 3, width = '75%', align = 'c',
   bordered = TRUE,
   caption = "Brushed Region Stats")
