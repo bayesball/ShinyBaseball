@@ -17,12 +17,15 @@ ui <- fluidPage(
                c("Launch Speed",
                  "Hit", "Home Run",
                  "Expected BA"),
-               inline = FALSE)
+               inline = FALSE),
+   h5("Click for Launch Speed:"),
+   tableOutput("data2")
   )),
   column(8,
          plotOutput("plot", brush =
               brushOpts("plot_brush",
                         fill = "#0000ff"),
+              click = "plot_click",
               width = '440px'),
          tableOutput("data")
          )
@@ -53,14 +56,14 @@ server <- function(input, output, session) {
     }
     centertitle <- function(){
       theme(plot.title = element_text(
-        colour = "white", size = 18,
+        colour = "white", size = 14,
         hjust = 0.5, vjust = 0.8, angle = 0))
     }
 #    sc <- the_data()
     mytitle <- paste(str_squish(input$name),
                      "-", input$measure)
     th1 <- theme(plot.background =
-                   element_rect(fill = "chocolate4"),
+                   element_rect(fill = "grey40"),
                  axis.text = element_text(colour = "white"),
                  axis.title = element_text(colour = "white"))
 
@@ -110,6 +113,14 @@ server <- function(input, output, session) {
         scale_color_distiller(palette="RdYlBu")
     }
   }, res = 96)
+
+  output$data2 <- renderTable({
+    req(input$plot_click)
+    d <- nearPoints(filter(sc2019_ip,
+           player_name == str_squish(input$name)),
+               input$plot_click)
+    d[, c("player_name", "launch_speed")]
+  }, digits = 3)
 
   output$data <- renderTable({
     req(input$plot_brush)
