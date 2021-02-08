@@ -4,10 +4,10 @@ library(dplyr)
 library(stringr)
 
 ui <- fluidPage(
-  theme = shinythemes::shinytheme("slate"),
+  theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
   h4(id="big-heading", "In-Play Brushing App"),
-  tags$style(HTML("#big-heading{color: white;}")),
+  tags$style(HTML("#big-heading{color: blue;}")),
 #  fileInput("file1", "Read in Statcast CSV File",
 #            accept = ".csv"),
 #  checkboxInput("header", "Header", TRUE),
@@ -18,7 +18,7 @@ ui <- fluidPage(
                  "Hit", "Home Run",
                  "Expected BA"),
                inline = FALSE),
-   h5("Click for Launch Speed:"),
+   h5("Click for Launch Speed, xBA:"),
    tableOutput("data2")
   )),
   column(8,
@@ -26,7 +26,7 @@ ui <- fluidPage(
               brushOpts("plot_brush",
                         fill = "#0000ff"),
               click = "plot_click",
-              width = '440px'),
+              width = '455px'),
          tableOutput("data")
          )
 )
@@ -40,8 +40,10 @@ server <- function(input, output, session) {
 #   validate(need(ext == "csv", "Please upload a csv file"))
 #   read.csv(file$datapath, header = input$header)
 # })
-
   output$plot <- renderPlot({
+    correctinput <- function(st){
+      str_to_title(str_squish(st))
+    }
     add_zone <- function(){
       topKzone <- 3.5
       botKzone <- 1.6
@@ -60,17 +62,17 @@ server <- function(input, output, session) {
         hjust = 0.5, vjust = 0.8, angle = 0))
     }
 #    sc <- the_data()
-    mytitle <- paste(str_squish(input$name),
+    mytitle <- paste(correctinput(input$name),
                      "-", input$measure)
     th1 <- theme(plot.background =
-                   element_rect(fill = "grey40"),
+                   element_rect(fill = "deepskyblue4"),
                  axis.text = element_text(colour = "white"),
                  axis.title = element_text(colour = "white"))
 
     if(input$measure == "Hit"){
     ggplot() +
       geom_point(data = filter(sc2019_ip,
-              player_name == str_squish(input$name)),
+              player_name == correctinput(input$name)),
                  aes(plate_x, plate_z, color = H)) +
       add_zone() +
       ggtitle(mytitle) +
@@ -81,7 +83,7 @@ server <- function(input, output, session) {
     } else if(input$measure == "Home Run"){
       ggplot() +
         geom_point(data = filter(sc2019_ip,
-                  player_name == str_squish(input$name)),
+                  player_name == correctinput(input$name)),
                    aes(plate_x, plate_z, color = HR)) +
         add_zone() +
         ggtitle(mytitle) +
@@ -92,7 +94,7 @@ server <- function(input, output, session) {
     } else if(input$measure == "Launch Speed"){
       ggplot() +
         geom_point(data = filter(sc2019_ip,
-                player_name == str_squish(input$name)),
+                player_name == correctinput(input$name)),
                    aes(plate_x, plate_z,
                        color = launch_speed)) +
         add_zone() +
@@ -103,7 +105,7 @@ server <- function(input, output, session) {
     } else if(input$measure == "Expected BA"){
       ggplot() +
         geom_point(data = filter(sc2019_ip,
-                player_name == str_squish(input$name)),
+                player_name == correctinput(input$name)),
                    aes(plate_x, plate_z,
                        color = estimated_ba)) +
         add_zone() +
@@ -115,20 +117,29 @@ server <- function(input, output, session) {
   }, res = 96)
 
   output$data2 <- renderTable({
+    correctinput <- function(st){
+      str_to_title(str_squish(st))
+    }
     req(input$plot_click)
     d <- nearPoints(filter(sc2019_ip,
-           player_name == str_squish(input$name)),
+           player_name == correctinput(input$name)),
                input$plot_click)
-    d[, c("player_name", "launch_speed")]
+    d1 <- d[, c("player_name", "launch_speed",
+                "estimated_ba")]
+    names(d1)[2:3] <- c("Launch Speed", "xBA")
+    d1
   }, digits = 3)
 
   output$data <- renderTable({
+    correctinput <- function(st){
+      str_to_title(str_squish(st))
+    }
     req(input$plot_brush)
 #    sc <- the_data()
     sc1 <- brushedPoints(filter(sc2019_ip,
-                player_name == str_squish(input$name)),
+                player_name == correctinput(input$name)),
                       input$plot_brush)
-    data.frame(Name = str_squish(input$name),
+    data.frame(Name = correctinput(input$name),
                BIP = nrow(sc1),
                H = sum(sc1$H),
                HR = sum(sc1$HR),
