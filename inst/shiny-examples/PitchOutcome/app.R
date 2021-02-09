@@ -2,6 +2,8 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(stringr)
+library(tidyr)
+library(knitr)
 # library(readr)
 
 #sc_pitcher_2019 <- read_delim("https://raw.githubusercontent.com/bayesball/ShinyBaseball/main/data/sc_pitcher_2019.txt", delim = " ")
@@ -52,19 +54,23 @@ ui <- fluidPage(
 #  checkboxInput("header", "Header", TRUE),
   textInput("name", "Pitcher Name:",
             value = "Aaron Nola"),
-  radioButtons("pitch_type", "Pitch_Type:",
-               c("All", "CH", "CU", "FC", "FF",
-                 "FS", "FT", "KC", "SI", "SL"),
+  radioButtons("pitch_type", "Pitch Type:",
+               c("All", "CH", "CU", "EP", "FC",
+                  "FF", "FO",
+                 "FS", "FT", "KC", "KN", "SI", "SL"),
                inline = TRUE),
-  radioButtons("pitches", "Pitches:",
+  radioButtons("pitches", "Pitches to Display:",
              c("All", "Called", "Swung", "In-Play"),
-             inline = FALSE)
+             inline = FALSE),
+  hr(),
+  h4("Pitch Distribution:"),
+  tableOutput("table")
   )),
   column(8,
          plotOutput("plot",
             brush = brushOpts("plot_brush",
                         fill = "#0000ff"),
-              width = '455px'),
+              height = '440px'),
          tableOutput("data")
          )
 )
@@ -78,6 +84,22 @@ server <- function(input, output, session) {
 #   validate(need(ext == "csv", "Please upload a csv file"))
 #   read.csv(file$datapath, header = input$header)
 # })
+  output$table <- renderTable({
+    nice_table <- function(d){
+      d %>%
+        group_by(pitch_type) %>%
+        summarize(N = n()) %>%
+        filter(is.na(pitch_type) == FALSE) %>%
+        pivot_wider(
+          names_from = pitch_type,
+          values_from = N
+        )
+    }
+    pid <- get_id(input$name)
+    req(length(pid) > 0)
+    nice_table(filter(sc_pitcher_2019,
+                      pitcher == pid))
+  })
   output$plot <- renderPlot({
     fix_name <- function(st){
       str_to_title(str_squish(st))
@@ -176,30 +198,46 @@ server <- function(input, output, session) {
                name_last == names[2]) %>%
         pull(key_mlbam)
     }
-    req(input$pitches == "In-Play")
+    req(input$pitches == "In-Play" |
+          input$pitches == "Swung")
     req(input$plot_brush)
-    hit <- c("single", "double",
-             "triple", "home_run")
 
-    ptypes <- c("CH", "CU", "FC", "FF",
-                "FS", "FT", "KC", "SI", "SL")
+    ptypes <- c("CH", "CU", "EP", "FC",
+                "FF", "FO",
+                "FS", "FT", "KC", "KN", "SI", "SL")
     if(input$pitch_type == "All"){
       PT <- ptypes
        } else {
       PT <- input$pitch_type
       }
-
+    if(input$pitches == "In-Play"){
     sc1 <- brushedPoints(filter(sc_pitcher_2019,
                           pitcher == get_id(input$name),
                           pitch_type %in% PT,
                           type == "X"),
-                            input$plot_brush)
-    data.frame(Name = correctinput(input$name),
+                            input$plot_brush)}
+    if(input$pitches == "Swung"){
+    sc1 <- brushedPoints(filter(sc_pitcher_2019,
+                                  pitcher == get_id(input$name),
+                                  pitch_type %in% PT,
+                          description %in% c(in_play, miss, foul)),
+                           input$plot_brush)}
+    if(input$pitches == "In-Play"){
+    S <- data.frame(Name = correctinput(input$name),
                BIP = nrow(sc1),
                H_Rate = sum(sc1$events %in% hit) /
                      nrow(sc1),
                xBA = mean(sc1$estimated_ba_using_speedangle,
                           na.rm = TRUE))
+    }
+    if(input$pitches == "Swung"){
+      S <- data.frame(Name = correctinput(input$name),
+                      Swings = nrow(sc1),
+                      Miss_Rate =
+                    sum(sc1$description %in% miss) /
+                        nrow(sc1))
+    }
+    S
   }, digits = 3, width = '75%', align = 'c',
   bordered = TRUE,
   caption = "Brushed Region Stats")
