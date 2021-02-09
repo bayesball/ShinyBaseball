@@ -6,13 +6,13 @@ library(stringr)
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
-  h4(id="big-heading", "In-Play Brushing App"),
+  h3(id="big-heading", "Brushing In-Play"),
   tags$style(HTML("#big-heading{color: blue;}")),
 #  fileInput("file1", "Read in Statcast CSV File",
 #            accept = ".csv"),
 #  checkboxInput("header", "Header", TRUE),
   textInput("name", "Batter Name:",
-            value = ""),
+            value = "Mike Trout"),
   radioButtons("measure", "Measure:",
                c("Launch Speed",
                  "Hit", "Home Run",

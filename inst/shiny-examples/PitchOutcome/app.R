@@ -2,7 +2,9 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(stringr)
-library(readr)
+# library(readr)
+
+#sc_pitcher_2019 <- read_delim("https://raw.githubusercontent.com/bayesball/ShinyBaseball/main/data/sc_pitcher_2019.txt", delim = " ")
 
 #sc <- read_csv("sc_pitcher_2019.csv")
 #chadwick <- read_delim("chadwick.txt", delim = " ")
@@ -43,7 +45,7 @@ sc_pitcher_2019 %>%
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
-  h4(id="big-heading", "Pitcher Location App"),
+  h3(id="big-heading", "Pitch Outcomes"),
   tags$style(HTML("#big-heading{color: blue;}")),
 #  fileInput("file1", "Read in Statcast CSV File",
 #            accept = ".csv"),
@@ -56,7 +58,7 @@ ui <- fluidPage(
                inline = TRUE),
   radioButtons("pitches", "Pitches:",
              c("All", "Called", "Swung", "In-Play"),
-             inline = TRUE)
+             inline = FALSE)
   )),
   column(8,
          plotOutput("plot",
@@ -88,7 +90,7 @@ server <- function(input, output, session) {
                name_last == names[2]) %>%
         pull(key_mlbam)
     }
-    add_zone <- function(color = "red"){
+    add_zone <- function(color = "black"){
       topKzone <- 3.5
       botKzone <- 1.6
       inKzone <- -0.85

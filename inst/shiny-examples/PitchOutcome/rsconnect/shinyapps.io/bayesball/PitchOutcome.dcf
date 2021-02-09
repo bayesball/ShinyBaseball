@@ -1,0 +1,12 @@
+name: PitchOutcome
+title: PitchOutcome
+username:
+account: bayesball
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3608186
+bundleId: 4201727
+url: https://bayesball.shinyapps.io/PitchOutcome/
+when: 1612889651.58519
+asMultiple: FALSE
+asStatic: FALSE
