@@ -25,7 +25,7 @@
   \item{K_Pct}{strikeout rate}
   \item{ISO}{isolated power}
   \item{BABIP}{batting average on balls in play}
-  \itme{AVG}{batting average}
+  \item{AVG}{batting average}
   \item{OBP}{on-base percentage}
   \item{SLG}{slugging percentage}
   \item{wOBA}{weighted on-base percentage}
