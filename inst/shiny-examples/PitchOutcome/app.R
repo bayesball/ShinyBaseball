@@ -42,18 +42,18 @@ sc_pitcher_2019 %>%
                   ifelse(events %in% out, "out", NA))) ->
   sc_pitcher_2019
 
-# read in data
-
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
-  h3(id="big-heading", "Pitch Outcomes"),
+  h3(id="big-heading", "Pitch Outcome"),
   tags$style(HTML("#big-heading{color: blue;}")),
 #  fileInput("file1", "Read in Statcast CSV File",
 #            accept = ".csv"),
 #  checkboxInput("header", "Header", TRUE),
   textInput("name", "Pitcher Name:",
             value = "Aaron Nola"),
+  h5("Pitch Distribution:"),
+  tableOutput("table"),
   radioButtons("pitch_type", "Pitch Type:",
                c("All", "CH", "CU", "EP", "FC",
                   "FF", "FO",
@@ -63,8 +63,7 @@ ui <- fluidPage(
              c("All", "Called", "Swung", "In-Play"),
              inline = FALSE),
   hr(),
-  h4("Pitch Distribution:"),
-  tableOutput("table")
+
   )),
   column(8,
          plotOutput("plot",
@@ -85,6 +84,18 @@ server <- function(input, output, session) {
 #   read.csv(file$datapath, header = input$header)
 # })
   output$table <- renderTable({
+    get_id <- function(st){
+      st2 <- str_to_lower(str_squish(st))
+      names <- unlist(str_split(st2, " "))
+      chadwick %>%
+        mutate(fname = str_to_lower(name_first),
+               lname = str_to_lower(name_last),
+               Name = paste(name_first,
+                            name_last)) %>%
+        filter(fname == names[1],
+               lname == names[2]) %>%
+        select(key_mlbam, Name)
+    }
     nice_table <- function(d){
       d %>%
         group_by(pitch_type) %>%
@@ -95,22 +106,26 @@ server <- function(input, output, session) {
           values_from = N
         )
     }
-    pid <- get_id(input$name)
+    pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
     nice_table(filter(sc_pitcher_2019,
                       pitcher == pid))
   })
   output$plot <- renderPlot({
-    fix_name <- function(st){
-      str_to_title(str_squish(st))
-    }
+ #   fix_name <- function(st){
+ #     str_to_title(str_squish(st))
+ #   }
     get_id <- function(st){
-      st2 <- str_to_title(str_squish(st))
+      st2 <- str_to_lower(str_squish(st))
       names <- unlist(str_split(st2, " "))
       chadwick %>%
-        filter(name_first == names[1],
-               name_last == names[2]) %>%
-        pull(key_mlbam)
+        mutate(fname = str_to_lower(name_first),
+               lname = str_to_lower(name_last),
+               Name = paste(name_first,
+                            name_last)) %>%
+        filter(fname == names[1],
+               lname == names[2]) %>%
+        select(key_mlbam, Name)
     }
     add_zone <- function(color = "black"){
       topKzone <- 3.5
@@ -132,7 +147,7 @@ server <- function(input, output, session) {
           colour = "white", size = 14,
           hjust = 0.5, vjust = 0.8, angle = 0))
     }
-    pid <- get_id(input$name)
+    pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
 
 #    sc <- the_data()
@@ -170,9 +185,9 @@ server <- function(input, output, session) {
     if(input$pitch_type != "All"){
       PT <- input$pitch_type
     }
-    ggplot() +
+   p <-  ggplot() +
       geom_point(data = filter(sc_pitcher_2019,
-              pitcher == get_id(input$name),
+              pitcher == get_id(input$name)$key_mlbam,
               pitch_type %in% PT),
                  aes(plate_x, plate_z,
                      color = Outcome),
@@ -182,21 +197,28 @@ server <- function(input, output, session) {
       coord_equal() +
       xlim(-2.5, 2.5) +
       ylim(0, 5) +
-      labs(title = fix_name(input$name),
+      labs(title = get_id(input$name)$Name,
            subtitle = subtitle)
+     if(input$pitches %in% c("Swung", "In-Play")){
+       p <- p + annotate(geom = "text", x = 2, y = 4.7,
+                label = "BRUSH",
+                color = "deepskyblue4", size = 5)
+     }
+     p
 }, res = 96)
 
   output$data <- renderTable({
-    correctinput <- function(st){
-      str_to_title(str_squish(st))
-    }
     get_id <- function(st){
-      st2 <- str_to_title(str_squish(st))
+      st2 <- str_to_lower(str_squish(st))
       names <- unlist(str_split(st2, " "))
       chadwick %>%
-        filter(name_first == names[1],
-               name_last == names[2]) %>%
-        pull(key_mlbam)
+        mutate(fname = str_to_lower(name_first),
+               lname = str_to_lower(name_last),
+               Name = paste(name_first,
+                            name_last)) %>%
+        filter(fname == names[1],
+               lname == names[2]) %>%
+        select(key_mlbam, Name)
     }
     req(input$pitches == "In-Play" |
           input$pitches == "Swung")
@@ -212,18 +234,18 @@ server <- function(input, output, session) {
       }
     if(input$pitches == "In-Play"){
     sc1 <- brushedPoints(filter(sc_pitcher_2019,
-                          pitcher == get_id(input$name),
-                          pitch_type %in% PT,
+                  pitcher == get_id(input$name)$key_mlbam,
+                  pitch_type %in% PT,
                           type == "X"),
                             input$plot_brush)}
     if(input$pitches == "Swung"){
     sc1 <- brushedPoints(filter(sc_pitcher_2019,
-                                  pitcher == get_id(input$name),
+                pitcher == get_id(input$name)$key_mlbam,
                                   pitch_type %in% PT,
                           description %in% c(in_play, miss, foul)),
                            input$plot_brush)}
     if(input$pitches == "In-Play"){
-    S <- data.frame(Name = correctinput(input$name),
+    S <- data.frame(Name = get_id(input$name)$Name,
                BIP = nrow(sc1),
                H_Rate = sum(sc1$events %in% hit) /
                      nrow(sc1),
@@ -231,7 +253,7 @@ server <- function(input, output, session) {
                           na.rm = TRUE))
     }
     if(input$pitches == "Swung"){
-      S <- data.frame(Name = correctinput(input$name),
+      S <- data.frame(Name = get_id(input$name)$Name,
                       Swings = nrow(sc1),
                       Miss_Rate =
                     sum(sc1$description %in% miss) /

@@ -6,7 +6,7 @@ library(stringr)
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
-  h3(id="big-heading", "Brushing In-Play"),
+  h3(id="big-heading", "Brushing Zone"),
   tags$style(HTML("#big-heading{color: blue;}")),
 #  fileInput("file1", "Read in Statcast CSV File",
 #            accept = ".csv"),
