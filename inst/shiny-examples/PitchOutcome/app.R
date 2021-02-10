@@ -5,11 +5,11 @@ library(stringr)
 library(tidyr)
 library(knitr)
 # library(readr)
-
 #sc_pitcher_2019 <- read_delim("https://raw.githubusercontent.com/bayesball/ShinyBaseball/main/data/sc_pitcher_2019.txt", delim = " ")
-
 #sc <- read_csv("sc_pitcher_2019.csv")
 #chadwick <- read_delim("chadwick.txt", delim = " ")
+
+# some preliminary work on dataset
 called_ball <- c("blocked ball", "ball",
                        "called_strike")
 in_play <- c("hit_into_play",
@@ -26,7 +26,6 @@ out <- c("double_play", "field_error", "field_out",
          "fielders_choice", "fielders_choice_out",
          "force_out", "grounded_into_double_play",
          "other_out")
-
 sc_pitcher_2019 %>%
   mutate(Called = ifelse(description ==
                         "called_strike", "strike",
@@ -42,6 +41,7 @@ sc_pitcher_2019 %>%
                   ifelse(events %in% out, "out", NA))) ->
   sc_pitcher_2019
 
+# user interface
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
@@ -63,7 +63,6 @@ ui <- fluidPage(
              c("All", "Called", "Swung", "In-Play"),
              inline = FALSE),
   hr(),
-
   )),
   column(8,
          plotOutput("plot",
@@ -112,9 +111,6 @@ server <- function(input, output, session) {
                       pitcher == pid))
   })
   output$plot <- renderPlot({
- #   fix_name <- function(st){
- #     str_to_title(str_squish(st))
- #   }
     get_id <- function(st){
       st2 <- str_to_lower(str_squish(st))
       names <- unlist(str_split(st2, " "))
@@ -176,7 +172,8 @@ server <- function(input, output, session) {
         mutate(Outcome = InPlay)
     }
     if(input$pitches == "All"){
-      sc_pitcher_2019 <- mutate(sc_pitcher_2019, Outcome = type)
+      sc_pitcher_2019 <- mutate(sc_pitcher_2019,
+                                Outcome = type)
     }
     if(input$pitch_type == "All"){
       PT <- c("CH", "CU", "EP", "FC", "FF", "FO",
