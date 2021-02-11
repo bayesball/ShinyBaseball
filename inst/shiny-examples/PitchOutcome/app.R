@@ -84,8 +84,10 @@ server <- function(input, output, session) {
 # })
   output$table <- renderTable({
     get_id <- function(st){
-      st2 <- str_to_lower(str_squish(st))
-      names <- unlist(str_split(st2, " "))
+      names <- str_to_lower(unlist(str_split(str_squish(st), " ")))
+      if(length(names) == 3){
+        names <- c(paste(names[1], names[2]), names[3])
+      }
       chadwick %>%
         mutate(fname = str_to_lower(name_first),
                lname = str_to_lower(name_last),
@@ -112,8 +114,10 @@ server <- function(input, output, session) {
   })
   output$plot <- renderPlot({
     get_id <- function(st){
-      st2 <- str_to_lower(str_squish(st))
-      names <- unlist(str_split(st2, " "))
+      names <- str_to_lower(unlist(str_split(str_squish(st), " ")))
+      if(length(names) == 3){
+        names <- c(paste(names[1], names[2]), names[3])
+      }
       chadwick %>%
         mutate(fname = str_to_lower(name_first),
                lname = str_to_lower(name_last),
@@ -206,8 +210,10 @@ server <- function(input, output, session) {
 
   output$data <- renderTable({
     get_id <- function(st){
-      st2 <- str_to_lower(str_squish(st))
-      names <- unlist(str_split(st2, " "))
+      names <- str_to_lower(unlist(str_split(str_squish(st), " ")))
+      if(length(names) == 3){
+        names <- c(paste(names[1], names[2]), names[3])
+      }
       chadwick %>%
         mutate(fname = str_to_lower(name_first),
                lname = str_to_lower(name_last),
