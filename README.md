@@ -16,9 +16,13 @@ The main two Shiny functions:
 
 BrushingZone()
 
+![GitHub Logo](/images/brushingzone.png)
+
 Shiny app to illustrate brushing to explore hit, home run, and launch speed measurements over the zone (2019 data)
 
 PitchOutcome()
+
+![GitHub Logo](/images/pitchoutcome.png)
 
 Shiny app to illustrate pitch outcomes using 2019 Statcast data for pitchers
 
