@@ -9,6 +9,7 @@ shiny, ggplot2, dplyr, stringr, tidyr
 To install, use the install_github() function from the remotes package:
 
 library(remotes)
+
 install_github("bayesball/ShinyBaseball")
 
 The main two Shiny functions:
