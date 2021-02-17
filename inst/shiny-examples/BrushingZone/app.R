@@ -8,9 +8,6 @@ ui <- fluidPage(
   column(4, wellPanel(
   h3(id="big-heading", "Brushing Zone"),
   tags$style(HTML("#big-heading{color: blue;}")),
-#  fileInput("file1", "Read in Statcast CSV File",
-#            accept = ".csv"),
-#  checkboxInput("header", "Header", TRUE),
   textInput("name", "Batter Name:",
             value = "Mike Trout"),
   radioButtons("measure", "Measure:",
@@ -33,13 +30,6 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   options(shiny.maxRequestSize=60*1024^2)
-#  the_data <- reactive({
-#    file <- input$file1
-#    ext <- tools::file_ext(file$datapath)
-#    req(file)
-#   validate(need(ext == "csv", "Please upload a csv file"))
-#   read.csv(file$datapath, header = input$header)
-# })
   output$plot <- renderPlot({
     correctinput <- function(st){
       str_to_title(str_squish(st))
@@ -61,7 +51,6 @@ server <- function(input, output, session) {
         colour = "white", size = 14,
         hjust = 0.5, vjust = 0.8, angle = 0))
     }
-#    sc <- the_data()
     mytitle <- paste(correctinput(input$name),
                      "-", input$measure)
     th1 <- theme(plot.background =
@@ -135,7 +124,6 @@ server <- function(input, output, session) {
       str_to_title(str_squish(st))
     }
     req(input$plot_brush)
-#    sc <- the_data()
     sc1 <- brushedPoints(filter(sc2019_ip,
                 player_name == correctinput(input$name)),
                       input$plot_brush)
