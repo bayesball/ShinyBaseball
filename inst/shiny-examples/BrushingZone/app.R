@@ -15,7 +15,7 @@ ui <- fluidPage(
                  "Hit", "Home Run",
                  "Expected BA"),
                inline = FALSE),
-   h5("Click for Launch Speed, xBA:"),
+   h5("Click for Launch Speed, Launch Angle, xBA:"),
    tableOutput("data2")
   )),
   column(8,
@@ -113,9 +113,10 @@ server <- function(input, output, session) {
     d <- nearPoints(filter(sc2019_ip,
            player_name == correctinput(input$name)),
                input$plot_click)
-    d1 <- d[, c("player_name", "launch_speed",
-                "estimated_ba")]
-    names(d1)[2:3] <- c("Launch Speed", "xBA")
+    d1 <- d[, c("launch_speed",
+                "launch_angle", "estimated_ba")]
+    names(d1)[1:3] <- c("Launch Speed",
+                        "Launch Angle", "xBA")
     d1
   }, digits = 3)
 
