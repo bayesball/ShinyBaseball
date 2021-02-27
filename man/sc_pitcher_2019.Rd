@@ -11,9 +11,10 @@
   sc_pitcher_2019
 }
 \format{
-   A data frame with 732,473 observations on the following 10 variables.
+   A data frame with 732,473 observations on the following 11 variables.
   \describe{
   \item{pitcher}{pitcher id}
+  \item{batter}{batter id}
   \item{pitch_type}{code for pitch type}
   \item{plate_x}{horizontal location of pitch}
   \item{plate_z}{vertical location of pitch}
