@@ -11,7 +11,7 @@
   sc_pitcher_2019
 }
 \format{
-   A data frame with 732,473 observations on the following 11 variables.
+   A data frame with 732,473 observations on the following 12 variables.
   \describe{
   \item{pitcher}{pitcher id}
   \item{batter}{batter id}
@@ -24,6 +24,7 @@
   \item{events}{outcome of the resulting plate appearance}
   \item{description}{description of the pitch result}
   \item{estimated_ba_using_speedangle}{estimated batting average from launch speed and angle}
+  \item{Count}{current ball and strike count}
   }
 }
 \source{

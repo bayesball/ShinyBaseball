@@ -50,7 +50,10 @@ ui <- fluidPage(
 #  fileInput("file1", "Read in Statcast CSV File",
 #            accept = ".csv"),
 #  checkboxInput("header", "Header", TRUE),
-  textInput("name", "Pitcher Name:",
+  radioButtons("player_type", "Player Type:",
+               c("Pitcher", "Batter"),
+               inline = TRUE),
+  textInput("name", "Player Name:",
             value = "Aaron Nola"),
   h5("Pitch Distribution:"),
   tableOutput("table"),
@@ -109,8 +112,14 @@ server <- function(input, output, session) {
     }
     pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
-    nice_table(filter(sc_pitcher_2019,
+    if(input$player_type == "Pitcher"){
+      TB <- nice_table(filter(sc_pitcher_2019,
                       pitcher == pid))
+            } else {
+      TB <- nice_table(filter(sc_pitcher_2019,
+                      batter == pid))
+                      }
+      TB
   })
   output$plot <- renderPlot({
     get_id <- function(st){
@@ -186,10 +195,19 @@ server <- function(input, output, session) {
     if(input$pitch_type != "All"){
       PT <- input$pitch_type
     }
+   if(input$player_type == "Pitcher"){
+     scnew <- filter(sc_pitcher_2019,
+                     pitcher == get_id(input$name)$key_mlbam,
+                     pitch_type %in% PT)
+   } else{
+     scnew <- filter(sc_pitcher_2019,
+            batter == get_id(input$name)$key_mlbam,
+            pitch_type %in% PT)
+   }
+   Type <- ifelse(input$player_type == "Pitcher",
+                  "Pitcher", "Batter")
    p <-  ggplot() +
-      geom_point(data = filter(sc_pitcher_2019,
-              pitcher == get_id(input$name)$key_mlbam,
-              pitch_type %in% PT),
+      geom_point(data = scnew,
                  aes(plate_x, plate_z,
                      color = Outcome),
               size = 0.8) +
@@ -198,7 +216,8 @@ server <- function(input, output, session) {
       coord_equal() +
       xlim(-2.5, 2.5) +
       ylim(0, 5) +
-      labs(title = get_id(input$name)$Name,
+      labs(title = paste(Type,
+                      get_id(input$name)$Name),
            subtitle = subtitle)
      if(input$pitches %in% c("Swung", "In-Play")){
        p <- p + annotate(geom = "text", x = 2, y = 4.7,
@@ -234,17 +253,23 @@ server <- function(input, output, session) {
       PT <- ptypes
        } else {
       PT <- input$pitch_type
-      }
+       }
+    if(input$player_type == "Pitcher"){
+      scnew <- filter(sc_pitcher_2019,
+                  pitcher == get_id(input$name)$key_mlbam)
+    } else {
+      scnew <- filter(sc_pitcher_2019,
+                   batter == get_id(input$name)$key_mlbam)
+
+    }
     if(input$pitches == "In-Play"){
-    sc1 <- brushedPoints(filter(sc_pitcher_2019,
-                  pitcher == get_id(input$name)$key_mlbam,
-                  pitch_type %in% PT,
+    sc1 <- brushedPoints(filter(scnew,
+                                pitch_type %in% PT,
                           type == "X"),
                             input$plot_brush)}
     if(input$pitches == "Swung"){
-    sc1 <- brushedPoints(filter(sc_pitcher_2019,
-                pitcher == get_id(input$name)$key_mlbam,
-                                  pitch_type %in% PT,
+    sc1 <- brushedPoints(filter(scnew,
+                                pitch_type %in% PT,
                           description %in% c(in_play, miss, foul)),
                            input$plot_brush)}
     if(input$pitches == "In-Play"){
