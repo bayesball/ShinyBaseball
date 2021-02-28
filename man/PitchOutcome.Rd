@@ -1,5 +1,5 @@
-\name{PitchOutcome2}
-\alias{PitchOutcome2}
+\name{PitchOutcome}
+\alias{PitchOutcome}
 
 \title{
   Shiny App for Illustrating Pitch Outcomes
@@ -8,7 +8,7 @@
   Shiny app to illustrate pitch outcomes using 2019 Statcast data for pitchers or batters
 }
 \usage{
-  PitchOutcome2()
+  PitchOutcome()
 }
 \author{
   Jim Albert
