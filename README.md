@@ -2,6 +2,10 @@
 
 A collection of functions to illustrate the use of Shiny apps in baseball research.
 
+A general overview of this package can be found at
+
+https://bayesball.github.io/Introduction_to_ShinyBaseball.html
+
 This package depends on the following packages that should be installed first.
 
 shiny, ggplot2, dplyr, stringr, tidyr
