@@ -121,7 +121,7 @@ server <- function(input, output, session) {
       coord_equal() +
       xlim(-2.5, 2.5) +
       ylim(0, 5) +
-      labs(title = get_id(input$name)$Name) +
+      labs(title = paste("2019", get_id(input$name)$Name)) +
      facet_grid(Count ~ pitch_type)
 }, res = 96)
 }

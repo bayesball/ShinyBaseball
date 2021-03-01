@@ -51,7 +51,8 @@ server <- function(input, output, session) {
         colour = "white", size = 14,
         hjust = 0.5, vjust = 0.8, angle = 0))
     }
-    mytitle <- paste(correctinput(input$name),
+    mytitle <- paste("2019",
+                     correctinput(input$name),
                      "-", input$measure)
     th1 <- theme(plot.background =
                    element_rect(fill = "deepskyblue4"),

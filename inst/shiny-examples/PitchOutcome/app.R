@@ -216,7 +216,7 @@ server <- function(input, output, session) {
       coord_equal() +
       xlim(-2.5, 2.5) +
       ylim(0, 5) +
-      labs(title = paste(Type,
+      labs(title = paste("2019", Type,
                       get_id(input$name)$Name),
            subtitle = subtitle)
      if(input$pitches %in% c("Swung", "In-Play")){
