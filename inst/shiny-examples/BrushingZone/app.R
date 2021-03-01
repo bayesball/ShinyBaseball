@@ -139,7 +139,8 @@ server <- function(input, output, session) {
                xBA = mean(sc1$estimated_ba))
   }, digits = 3, width = '75%', align = 'c',
   bordered = TRUE,
-  caption = "Brushed Region Stats")
+  caption = "Brushed Region Stats",
+  caption.placement = "top")
 }
 
 shinyApp(ui = ui, server = server)

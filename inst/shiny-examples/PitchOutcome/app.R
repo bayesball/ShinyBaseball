@@ -55,8 +55,6 @@ ui <- fluidPage(
                inline = TRUE),
   textInput("name", "Player Name:",
             value = "Aaron Nola"),
-  h5("Pitch Distribution:"),
-  tableOutput("table"),
   radioButtons("pitch_type", "Pitch Type:",
                c("All", "CH", "CU", "EP", "FC",
                   "FF", "FO",
@@ -72,7 +70,9 @@ ui <- fluidPage(
             brush = brushOpts("plot_brush",
                         fill = "#0000ff"),
               height = '440px'),
-         tableOutput("data")
+         tableOutput("data"),
+         h5("Pitch Distribution:"),
+         tableOutput("table")
          )
 )
 
@@ -290,7 +290,8 @@ server <- function(input, output, session) {
     S
   }, digits = 3, width = '75%', align = 'c',
   bordered = TRUE,
-  caption = "Brushed Region Stats")
+  caption = "Brushed Region Stats",
+  caption.placement = "top")
 }
 
 shinyApp(ui = ui, server = server)
