@@ -45,6 +45,8 @@ plot_spray <- function(sc_ip,
     scnew <- filter(scnew, Type == "Pop up")
   }
 
+  scnew %>% mutate(H = as.logical(H)) -> scnew
+
   p <- ggplot() +
     geom_polygon(data=data.frame(
       x = c(0, -125, -125, 0, 0),
@@ -54,8 +56,6 @@ plot_spray <- function(sc_ip,
                                 y = c(100, 0, 100)),
               aes(x, y), color="black", size=1) +
     ggtitle(paste(season, pname, type, "Locations")) +
-    scale_colour_manual(values =
-              c("blue", "brown","red", "green")) +
     annotate(geom="text", x=-100, y=190,
              label="PULL", size=6,
              color="black") +
@@ -64,7 +64,7 @@ plot_spray <- function(sc_ip,
     theme_fivethirtyeight() +
     theme(
       plot.title = element_text(
-        colour = "red",
+        colour = "blue",
         size = 20,
         hjust = 0.5,
         vjust = 0.8,
@@ -76,27 +76,37 @@ plot_spray <- function(sc_ip,
     if(type == "All"){
       p <- p + geom_point(data = scnew,
               aes(adj_location_x, location_y,
-              color=Type))
+              color=Type)) +
+        scale_colour_manual(values =
+                c("blue", "brown","red", "green"))
     }
     if(type == "Fly ball"){
       p <- p + geom_point(data = scnew,
-               aes(adj_location_x, location_y),
-               color = "blue")
+               aes(adj_location_x, location_y,
+               color = H)) +
+        scale_colour_manual(values =
+                              c("brown", "red"))
     }
   if(type == "Ground ball"){
     p <- p + geom_point(data = scnew,
-                        aes(adj_location_x, location_y),
-                        color = "brown")
+                aes(adj_location_x, location_y,
+                  color = H)) +
+      scale_colour_manual(values =
+                            c("brown", "red"))
   }
   if(type == "Line drive"){
     p <- p + geom_point(data = scnew,
-                        aes(adj_location_x, location_y),
-                        color = "red")
+                aes(adj_location_x, location_y,
+                  color = H)) +
+      scale_colour_manual(values =
+                            c("brown", "red"))
   }
   if(type == "Pop up"){
     p <- p + geom_point(data = scnew,
-                        aes(adj_location_x, location_y),
-                        color = "green")
+                aes(adj_location_x, location_y,
+                      color = H)) +
+      scale_colour_manual(values =
+                      c("brown", "red"))
   }
    p
 }
