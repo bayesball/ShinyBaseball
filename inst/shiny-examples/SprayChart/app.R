@@ -2,7 +2,8 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(stringr)
-library(ShinyBaseball)
+library(tidyr)
+
 plot_spray <- function(sc_ip,
                        pname,
                        type = "All",
@@ -73,65 +74,65 @@ plot_spray <- function(sc_ip,
     ) +
     coord_fixed()
 
-    if(type == "All"){
-      p <- p + geom_point(data = scnew,
-              aes(adj_location_x, location_y,
-              color=Type)) +
-        scale_colour_manual(values =
-                c("blue", "brown","red", "green"))
-    }
-    if(type == "Fly ball"){
-      p <- p + geom_point(data = scnew,
-               aes(adj_location_x, location_y,
-               color = H)) +
-        scale_colour_manual(values =
-                              c("brown", "red"))
-    }
+  if(type == "All"){
+    p <- p + geom_point(data = scnew,
+                        aes(adj_location_x, location_y,
+                            color=Type)) +
+      scale_colour_manual(values =
+                            c("blue", "brown","red", "green"))
+  }
+  if(type == "Fly ball"){
+    p <- p + geom_point(data = scnew,
+                        aes(adj_location_x, location_y,
+                            color = H)) +
+      scale_colour_manual(values =
+                            c("brown", "red"))
+  }
   if(type == "Ground ball"){
     p <- p + geom_point(data = scnew,
-                aes(adj_location_x, location_y,
-                  color = H)) +
+                        aes(adj_location_x, location_y,
+                            color = H)) +
       scale_colour_manual(values =
                             c("brown", "red"))
   }
   if(type == "Line drive"){
     p <- p + geom_point(data = scnew,
-                aes(adj_location_x, location_y,
-                  color = H)) +
+                        aes(adj_location_x, location_y,
+                            color = H)) +
       scale_colour_manual(values =
                             c("brown", "red"))
   }
   if(type == "Pop up"){
     p <- p + geom_point(data = scnew,
-                aes(adj_location_x, location_y,
-                      color = H)) +
+                        aes(adj_location_x, location_y,
+                            color = H)) +
       scale_colour_manual(values =
-                      c("brown", "red"))
+                            c("brown", "red"))
   }
-   p
+  p
 }
 
 
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
-  h3(id="big-heading", "Spray Chart"),
-  tags$style(HTML("#big-heading{color: blue;}")),
-  textInput("name", "Batter Name:",
-            value = "Mike Trout"),
-  radioButtons("type", "Batted Ball Type:",
-               c("All",
-                 "Fly ball", "Ground ball",
-                 "Line drive", "Pop up"),
-               inline = FALSE)
+    h3(id="big-heading", "Spray Chart"),
+    tags$style(HTML("#big-heading{color: blue;}")),
+    textInput("name", "Batter Name:",
+              value = "Mike Trout"),
+    radioButtons("type", "Batted Ball Type:",
+                 c("All",
+                   "Fly ball", "Ground ball",
+                   "Line drive", "Pop up"),
+                 inline = FALSE)
   )),
   column(8,
          plotOutput("plot",
-              width = '100%',
-              height = "500px"),
+                    width = '100%',
+                    height = "500px"),
          h5("Batted Ball Distribution:"),
          tableOutput("table")
-         )
+  )
 )
 
 server <- function(input, output, session) {
@@ -165,12 +166,12 @@ server <- function(input, output, session) {
     sc2019_ip %>%
       filter(player_name ==
                get_id(input$name)$Name,
-        is.na(launch_angle) == FALSE) %>%
+             is.na(launch_angle) == FALSE) %>%
       mutate(Type = ifelse(launch_angle < 10,
                            "Ground ball",
-              ifelse(launch_angle < 25, "Line drive",
-              ifelse(launch_angle < 50, "Fly ball",
-              "Pop up")))) ->
+                           ifelse(launch_angle < 25, "Line drive",
+                                  ifelse(launch_angle < 50, "Fly ball",
+                                         "Pop up")))) ->
       scnew
     nice_table(scnew)
   })
