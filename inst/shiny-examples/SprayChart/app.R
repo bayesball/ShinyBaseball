@@ -33,20 +33,15 @@ plot_spray <- function(sc_ip,
 
   scnew <- filter(sc_ip, player_name == pname)
 
-  if(type == "Fly ball"){
-    scnew <- filter(scnew, Type == "Fly ball")
-  }
-  if(type == "Ground ball"){
-    scnew <- filter(scnew, Type == "Ground ball")
-  }
-  if(type == "Line drive"){
-    scnew <- filter(scnew, Type == "Line drive")
-  }
-  if(type == "Pop up"){
-    scnew <- filter(scnew, Type == "Pop up")
+  if(type != "All"){
+    scnew <- filter(scnew, Type == type)
   }
 
   scnew %>% mutate(H = as.logical(H)) -> scnew
+
+  hits <- sum(scnew$H)
+  BIP <- nrow(scnew)
+  hit_rate <- round(hits / BIP, 3)
 
   p <- ggplot() +
     geom_polygon(data=data.frame(
@@ -70,9 +65,19 @@ plot_spray <- function(sc_ip,
         hjust = 0.5,
         vjust = 0.8,
         angle = 0
+      ),
+      plot.subtitle = element_text(
+        colour = "red",
+        size = 16,
+        hjust = 0.5,
+        vjust = 0.8,
+        angle = 0
       )
     ) +
-    coord_fixed()
+    coord_fixed() +
+    labs(subtitle = paste("BIP Hit Rate =",
+                          hits, "/", BIP,
+                          "=", hit_rate))
 
   if(type == "All"){
     p <- p + geom_point(data = scnew,
