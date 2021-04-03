@@ -60,10 +60,11 @@ server <- function(input, output, session) {
                  axis.title = element_text(colour = "white"))
 
     if(input$measure == "Hit"){
+    sc2019_ip$HIT <- as.character(sc2019_ip$H)
     ggplot() +
       geom_point(data = filter(sc2019_ip,
               player_name == correctinput(input$name)),
-                 aes(plate_x, plate_z, color = H)) +
+                 aes(plate_x, plate_z, color = HIT)) +
       add_zone() +
       ggtitle(mytitle) +
       scale_colour_manual(values =
@@ -71,6 +72,7 @@ server <- function(input, output, session) {
       centertitle() + th1 +
       coord_equal()
     } else if(input$measure == "Home Run"){
+      sc2019_ip$HR <- as.character(sc2019_ip$HR)
       ggplot() +
         geom_point(data = filter(sc2019_ip,
                   player_name == correctinput(input$name)),
