@@ -108,7 +108,7 @@ radial_plot <- function(sc_ip, type,
           panel.background = element_blank()) +
     xlim(0, 1.1) +
     ylim(-1.1, 1.1) +
-    ggtitle(paste("Radial Plot of Balls in Play",
+    ggtitle(paste("Radial Chart of Balls in Play",
                   "\n", title)) +
     theme(plot.title = element_text(colour = "blue",
                                     size = 20,
