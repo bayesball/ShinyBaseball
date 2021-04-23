@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(stringr)
 library(tidyr)
+library(sportyR)
 
 plot_spray <- function(sc_ip,
                        pname,
@@ -18,9 +19,11 @@ plot_spray <- function(sc_ip,
                                        "Pop up")))) ->
     sc_ip
 
+  # add factor of 2 to conform to new package
+
   sc_ip %>% mutate(
-    location_x = hc_x - 125.42,
-    location_y = 198.27 - hc_y,
+    location_x = 2 *(hc_x - 125.42),
+    location_y = 2 * (198.27 - hc_y),
     spray_angle = atan(location_x / location_y)
   ) -> sc_ip
 
@@ -43,14 +46,16 @@ plot_spray <- function(sc_ip,
   BIP <- nrow(scnew)
   hit_rate <- round(hits / BIP, 3)
 
-  p <- ggplot() +
-    geom_polygon(data=data.frame(
-      x = c(0, -125, -125, 0, 0),
-      y = c(0, 125, 200, 200, 0)),
-      aes(x, y), fill="beige") +
-    geom_path(data = data.frame(x = c(-100, 0, 100),
-                                y = c(100, 0, 100)),
-              aes(x, y), color="black", size=1) +
+  p <- geom_baseball(league = "MLB")
+
+  p <- p +
+  #  geom_polygon(data=data.frame(
+  #     x = c(0, -125, -125, 0, 0),
+  #     y = c(0, 125, 200, 200, 0)),
+  #    aes(x, y), fill="beige") +
+  #  geom_path(data = data.frame(x = c(-100, 0, 100),
+  #                              y = c(100, 0, 100)),
+  #            aes(x, y), color="black", size=1) +
     ggtitle(paste(season, pname, type, "Locations")) +
     annotate(geom="text", x=-100, y=190,
              label="PULL", size=6,
