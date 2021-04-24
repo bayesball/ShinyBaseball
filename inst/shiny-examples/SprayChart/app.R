@@ -7,23 +7,23 @@ library(sportyR)
 
 plot_spray <- function(sc_ip,
                        pname,
-                       type = "All",
+                       bb_type = "All",
                        season = 2019){
   require(ggthemes)
 
   sc_ip %>%
     filter(is.na(launch_angle) == FALSE) %>%
-    mutate(Type = ifelse(launch_angle < 10, "Ground ball",
-                         ifelse(launch_angle < 25, "Line drive",
-                                ifelse(launch_angle < 50, "Fly ball",
-                                       "Pop up")))) ->
+    mutate(BB_Type = ifelse(launch_angle < 10, "Ground ball",
+                            ifelse(launch_angle < 25, "Line drive",
+                                   ifelse(launch_angle < 50, "Fly ball",
+                                          "Pop up")))) ->
     sc_ip
 
-  # add factor of 2 to conform to new package
+  # add factor of 2.4 to conform to new package
 
   sc_ip %>% mutate(
-    location_x = 2 *(hc_x - 125.42),
-    location_y = 2 * (198.27 - hc_y),
+    location_x = 2.4 *(hc_x - 125.42),
+    location_y = 2.4 * (198.27 - hc_y),
     spray_angle = atan(location_x / location_y)
   ) -> sc_ip
 
@@ -36,8 +36,10 @@ plot_spray <- function(sc_ip,
 
   scnew <- filter(sc_ip, player_name == pname)
 
-  if(type != "All"){
-    scnew <- filter(scnew, Type == type)
+  if(bb_type %in% c("Fly ball", "Ground ball",
+                    "Line drive", "Pop up")){
+    #   scnew %>% filter(BB_Type == bb_type) -> scnew
+    scnew <- scnew[scnew$BB_Type == bb_type, ]
   }
 
   scnew %>% mutate(H = as.logical(H)) -> scnew
@@ -46,23 +48,24 @@ plot_spray <- function(sc_ip,
   BIP <- nrow(scnew)
   hit_rate <- round(hits / BIP, 3)
 
-  p <- geom_baseball(league = "MLB")
+  p <- geom_baseball(league = "MLB") +
+    ylim(-10, 400)
 
   p <- p +
-  #  geom_polygon(data=data.frame(
-  #     x = c(0, -125, -125, 0, 0),
-  #     y = c(0, 125, 200, 200, 0)),
-  #    aes(x, y), fill="beige") +
-  #  geom_path(data = data.frame(x = c(-100, 0, 100),
-  #                              y = c(100, 0, 100)),
-  #            aes(x, y), color="black", size=1) +
-    ggtitle(paste(season, pname, type, "Locations")) +
+    #  geom_polygon(data=data.frame(
+    #     x = c(0, -125, -125, 0, 0),
+    #     y = c(0, 125, 200, 200, 0)),
+    #    aes(x, y), fill="beige") +
+    #  geom_path(data = data.frame(x = c(-100, 0, 100),
+    #                              y = c(100, 0, 100)),
+    #            aes(x, y), color="black", size=1) +
+    ggtitle(paste(season, pname, bb_type, "Locations")) +
     annotate(geom="text", x=-100, y=190,
              label="PULL", size=6,
-             color="black") +
+             color="white") +
     xlab("Adjusted X Location") +
     ylab("Y Location") +
-    theme_fivethirtyeight() +
+    #   theme_fivethirtyeight() +
     theme(
       plot.title = element_text(
         colour = "blue",
@@ -79,45 +82,46 @@ plot_spray <- function(sc_ip,
         angle = 0
       )
     ) +
-    coord_fixed() +
+    #   coord_fixed() +
     labs(subtitle = paste("BIP Hit Rate =",
                           hits, "/", BIP,
                           "=", hit_rate))
 
-  if(type == "All"){
+  if(bb_type == "All"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y,
-                            color=Type)) +
+                            color=BB_Type)) +
       scale_colour_manual(values =
-                            c("blue", "brown","red", "green"))
+                            c("blue", "brown",
+                              "red", "green"))
   }
-  if(type == "Fly ball"){
+  if(bb_type == "Fly ball"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y,
                             color = H)) +
       scale_colour_manual(values =
-                            c("brown", "red"))
+                            c("yellow", "red"))
   }
-  if(type == "Ground ball"){
+  if(bb_type == "Ground ball"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y,
                             color = H)) +
       scale_colour_manual(values =
-                            c("brown", "red"))
+                            c("yellow", "red"))
   }
-  if(type == "Line drive"){
+  if(bb_type == "Line drive"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y,
                             color = H)) +
       scale_colour_manual(values =
-                            c("brown", "red"))
+                            c("yellow", "red"))
   }
-  if(type == "Pop up"){
+  if(bb_type == "Pop up"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y,
                             color = H)) +
       scale_colour_manual(values =
-                            c("brown", "red"))
+                            c("yellow", "red"))
   }
   p
 }
