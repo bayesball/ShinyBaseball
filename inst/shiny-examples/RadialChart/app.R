@@ -169,9 +169,12 @@ server <- function(input, output, session) {
     pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
 
-    sc_subset <- sc2019_ip %>%
-      filter(pitcher == pid,
-             game_date == input$date)
+ #   sc_subset <- sc2019_ip %>%
+ #     filter(pitcher == pid,
+ #            game_date == input$date)
+    sc_subset <- sc2019_ip[sc2019_ip$pitcher == pid &
+                   sc2019_ip$game_date ==
+                     as.character(input$date), ]
 
  #   radial_plot(sc_subset)
  #   if(input$type == "Batted Ball Type"){
