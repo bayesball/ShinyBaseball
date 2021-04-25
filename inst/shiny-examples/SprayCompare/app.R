@@ -19,8 +19,8 @@ plot_spray_compare <- function(sc_ip,
     sc_ip
 
   sc_ip %>% mutate(
-    location_x = hc_x - 125.42,
-    location_y = 198.27 - hc_y,
+    location_x = 2.5 * (hc_x - 125.42),
+    location_y = 2.5 * (198.27 - hc_y),
     spray_angle = atan(location_x / location_y)
   ) -> sc_ip
 
@@ -46,24 +46,28 @@ plot_spray_compare <- function(sc_ip,
   if(type == "Pop up"){
     scnew <- filter(scnew, Type == "Pop up")
   }
-  p <- ggplot() +
-    geom_polygon(data=data.frame(
-      x = c(0, -125, -125, 0, 0),
-      y = c(0, 125, 200, 200, 0)),
-      aes(x, y), fill="beige")  +
-    geom_path(data = data.frame(x = c(-100, 0, 100),
-                                y = c(100, 0, 100)),
-              aes(x, y), color="black", size=1.5) +
+
+  p <- geom_baseball(league = "MLB") +
+    ylim(-10, 400)
+
+  p <- p +
+ #   geom_polygon(data=data.frame(
+ #     x = c(0, -125, -125, 0, 0),
+ #     y = c(0, 125, 200, 200, 0)),
+ #     aes(x, y), fill="beige")  +
+ #   geom_path(data = data.frame(x = c(-100, 0, 100),
+ #                               y = c(100, 0, 100)),
+ #             aes(x, y), color="black", size=1.5) +
     facet_wrap(~ player_name) +
     ggtitle(paste(type, "Locations")) +
     scale_colour_manual(values =
                 c("blue", "brown","red", "green")) +
     annotate(geom="text", x=-85, y=190,
              label="PULL", size=6,
-             color="black") +
+             color="white") +
     xlab("Adjusted X Location") +
     ylab("Y Location") +
-    theme_fivethirtyeight() +
+ #   theme_fivethirtyeight() +
     theme(
       plot.title = element_text(
         colour = "red",
@@ -76,8 +80,8 @@ plot_spray_compare <- function(sc_ip,
         size = 18,
         color = "blue"
       )
-    ) +
-    coord_fixed()
+    )
+ #   coord_fixed()
 
   if(type == "All"){
     p <- p + geom_point(data = scnew,
@@ -88,25 +92,25 @@ plot_spray_compare <- function(sc_ip,
   if(type == "Fly ball"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y),
-                        color = "blue",
+                        color = "yellow",
                         size = 0.75)
   }
   if(type == "Ground ball"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y),
-                        color = "brown",
+                        color = "yellow",
                         size = 0.75)
   }
   if(type == "Line drive"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y),
-                        color = "red",
+                        color = "yellow",
                         size = 0.75)
   }
   if(type == "Pop up"){
     p <- p + geom_point(data = scnew,
                         aes(adj_location_x, location_y),
-                        color = "green",
+                        color = "yellow",
                         size = 0.75)
   }
   p

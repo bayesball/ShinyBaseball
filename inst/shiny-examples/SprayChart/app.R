@@ -22,8 +22,8 @@ plot_spray <- function(sc_ip,
   # add factor of 2.4 to conform to new package
 
   sc_ip %>% mutate(
-    location_x = 2.4 *(hc_x - 125.42),
-    location_y = 2.4 * (198.27 - hc_y),
+    location_x = 2.5 *(hc_x - 125.42),
+    location_y = 2.5 * (198.27 - hc_y),
     spray_angle = atan(location_x / location_y)
   ) -> sc_ip
 
