@@ -128,19 +128,20 @@ ui <- fluidPage(
     h3(id="big-heading", "Radial Chart"),
     tags$style(HTML("#big-heading{color: blue;}")),
     textInput("name",
-              label = h4("Pitcher Name:"),
+              label = h5("Pitcher Name:"),
               value = "Aaron Nola"),
-    dateInput("date", label = h4("2019 Date Input:"),
+    dateInput("date", label = h5("2019 Date Input:"),
               value = "2019-03-28"),
  #   textInput("game_pk", "2019 Game Id:",
  #            value = "567059"),
     radioButtons("type",
-                 label = h4("Point Color:"),
+                 label = h5("Point Color:"),
                  c("Batted Ball Type",
                    "xBA",
                    "Hit",
                    "Home Run"),
-                 inline = FALSE)
+                 inline = TRUE),
+    dataTableOutput("table")
   )),
   column(8,
          plotOutput("plot",
@@ -150,6 +151,39 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  output$table <- renderDataTable({
+    get_id <- function(st){
+      names <- str_to_lower(unlist(str_split(str_squish(st), " ")))
+      if(length(names) == 3){
+        names <- c(paste(names[1], names[2]), names[3])
+      }
+      chadwick %>%
+        mutate(fname = str_to_lower(name_first),
+               lname = str_to_lower(name_last),
+               Name = paste(name_first,
+                            name_last)) %>%
+        filter(fname == names[1],
+               lname == names[2]) %>%
+        select(key_mlbam, Name)
+    }
+
+    pid <- get_id(input$name)$key_mlbam
+    req(length(pid) > 0)
+
+    sc_subset <- sc2019_ip %>%
+      filter(pitcher == pid,
+             game_date == as.character(input$date))
+    #   sc_subset <- sc2019_ip[sc2019_ip$pitcher == pid &
+    #                 sc2019_ip$game_date ==
+    #                   as.character(input$date), ]
+
+    sc2019_ip %>%
+      filter(pitcher == pid) %>% pull(game_date) %>%
+      as.character() %>% unique() -> the_dates
+    data.frame(Start_Dates = the_dates)
+  },
+  options = list(scrollY = 50)
+  )
   output$plot <- renderPlot({
     get_id <- function(st){
       names <- str_to_lower(unlist(str_split(str_squish(st), " ")))
@@ -169,12 +203,13 @@ server <- function(input, output, session) {
     pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
 
- #   sc_subset <- sc2019_ip %>%
- #     filter(pitcher == pid,
- #            game_date == input$date)
-    sc_subset <- sc2019_ip[sc2019_ip$pitcher == pid &
-                   sc2019_ip$game_date ==
-                     as.character(input$date), ]
+   sc_subset <- sc2019_ip %>%
+     filter(pitcher == pid,
+             game_date == as.character(input$date))
+ #   sc_subset <- sc2019_ip[sc2019_ip$pitcher == pid &
+#                 sc2019_ip$game_date ==
+#                   as.character(input$date), ]
+
 
  #   radial_plot(sc_subset)
  #   if(input$type == "Batted Ball Type"){
