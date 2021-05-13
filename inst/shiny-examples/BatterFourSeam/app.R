@@ -95,7 +95,7 @@ bin_FF_locations_B <- function(sc, plateX, plateZ){
              .drop = FALSE) %>%
     summarize(NT = NT$N[NT$p_throws == "R"],
               N = n(),
-              Swing = sum(Swing, n.rm = TRUE),
+              Swing = sum(Swing, na.rm = TRUE),
               Miss = sum(Miss, na.rm = TRUE),
               InPlay = sum(InPlay, na.rm = TRUE),
               Hit = sum(Hit, na.rm = TRUE),
@@ -113,7 +113,7 @@ bin_FF_locations_B <- function(sc, plateX, plateZ){
              .drop = FALSE) %>%
     summarize(NT = NT$N[NT$p_throws == "L"],
               N = n(),
-              Swing = sum(Swing, n.rm = TRUE),
+              Swing = sum(Swing, na.rm = TRUE),
               Miss = sum(Miss, na.rm = TRUE),
               InPlay = sum(InPlay, na.rm = TRUE),
               Hit = sum(Hit, na.rm = TRUE),
@@ -141,6 +141,7 @@ bin_FF_locations_B <- function(sc, plateX, plateZ){
                  Swing, Miss, InPlay, Hit, HR,
                  P1, P2, P3, P4, P5)
 }
+
 plot_rates_B <- function(out,
                          title = "",
                          subtitle = "",
