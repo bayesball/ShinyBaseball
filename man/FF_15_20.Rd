@@ -2,7 +2,7 @@
 \alias{FF_15_20}
 
 \title{
-  2019 Statcast In-Play Data
+  Four-Seam Fastball Statcast Data
 }
 \description{
   Statcast measurements on four-seam fastballs for 2015-2020 seasons

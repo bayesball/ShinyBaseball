@@ -247,6 +247,10 @@ ui <- fluidPage(
                          plotOutput("plot1",
                               height = "500px")
                         ),
+                       tabPanel("Overall",
+                                plotOutput("plot1b",
+                                           height = "500px")
+                       ),
                        tabPanel("Residuals",
                          plotOutput("plot2",
                               height = "500px")
@@ -355,6 +359,68 @@ server <- function(input, output, session) {
     }}
   }, res = 96)
 
+  output$plot1b <- renderPlot({
+    pid <- get_id(input$name) %>%
+      pull(key_mlbam)
+
+    if(length(pid) > 0){
+
+      df <- filter(FF_15_20, Season %in% as.numeric(input$year),
+                   batter == pid)
+
+      if(nrow(df) > 0){
+
+        dfnew <- filter(FF_15_20, Season %in%
+                          as.numeric(input$year))
+        out_all <- bin_FF_locations_B(dfnew,
+                                      c(-0.85, 0.85, 0.425),
+                                      c(1.6, 3.5, 0.475))
+
+        if(input$type == "location"){
+          out_all$PCT <- out_all$P1
+          p <- plot_rates_B(out_all,  "Overall",
+                            paste("Location Percentages", "\n",
+                                  paste(input$year, collapse = " ")),
+                            digits = 1) +
+            add_zone("black")
+        }
+        if(input$type == "swing"){
+          out_all$PCT <- out_all$P2
+          p <- plot_rates_B(out_all, "Overall",
+                            paste("Swing Percentages", "\n",
+                                  paste(input$year, collapse = " ")),
+                            digits = 0) +
+            add_zone("black")
+        }
+        if(input$type == "miss"){
+          out_all$PCT <- out_all$P3
+          p <- plot_rates_B(out_all, "Overall",
+                            paste("Miss Percentages", "\n",
+                                  paste(input$year, collapse = " ")),
+                            digits = 0) +
+            add_zone("black")
+        }
+        if(input$type == "hit"){
+          out_all$PCT <- out_all$P4
+          p <- plot_rates_B(out_all, "Overall",
+                            paste("Hit Avgs", "\n",
+                                  paste(input$year, collapse = " ")),
+                            digits = 3,
+                            label_size = 4) +
+            add_zone("black")
+        }
+        if(input$type == "HR"){
+          out_all$PCT <- out_all$P5
+          p <- plot_rates_B(out_all, "Overall",
+                            paste("HR Percentages", "\n",
+                                  paste(input$year, collapse = " ")),
+                            digits = 1) +
+            add_zone("black")
+        }
+        p
+      }}
+  }, res = 96)
+
   output$plot2 <- renderPlot({
     pid <- get_id(input$name) %>%
       pull(key_mlbam)
@@ -405,7 +471,7 @@ server <- function(input, output, session) {
           p <- plot_rates_B(out, input$name,
                           paste("Residuals of Hit Avgs", "\n",
                                 paste(input$year, collapse = " ")),
-                          digits = 2,
+                          digits = 3,
                           label_size = 4) +
             add_zone("black")
         }
