@@ -279,9 +279,10 @@ server <- function(input, output, session) {
   }
 
   z_score2 <- function(y, n, p){
-    se <- sqrt(p * (1 - p) / n)
-    phat <- y / n
-    (phat - p) / se
+    se <- ifelse(n > 0,
+                 sqrt(p * (1 - p) / n),
+                 0)
+    ifelse(n > 0, (y / n - p) / se, 0)
   }
 
   add_zone <- function(Color = "red"){
