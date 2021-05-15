@@ -129,8 +129,10 @@ bin_FF_locations_B <- function(sc, plateX, plateZ){
   # compute five rates
   OUT %>%
     mutate(P1 = 100 * N / NT,     # location rate
-           P2 = 100 * Swing / N,  # swing rate
-           P3 = 100 * Miss / Swing, # miss rate
+           P2 = ifelse(N > 0,
+                       100 * Swing / N, 0),  # swing rate
+           P3 = ifelse(Swing > 0,
+                       100 * Miss / Swing, 0), # miss rate
            P4 = ifelse(InPlay > 0,
                        Hit / InPlay, 0),      # BABIP
            P5 = ifelse(InPlay > 0,
@@ -382,7 +384,7 @@ server <- function(input, output, session) {
         if(input$type == "location"){
           out_all$PCT <- out_all$P1
           p <- plot_rates_B(out_all,  "Overall",
-                            paste("Location Percentages", "\n",
+                            paste("Four-Seam Location Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 1) +
             add_zone("black")
@@ -390,7 +392,7 @@ server <- function(input, output, session) {
         if(input$type == "swing"){
           out_all$PCT <- out_all$P2
           p <- plot_rates_B(out_all, "Overall",
-                            paste("Swing Percentages", "\n",
+                            paste("Four-Seam Swing Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 0) +
             add_zone("black")
@@ -398,7 +400,7 @@ server <- function(input, output, session) {
         if(input$type == "miss"){
           out_all$PCT <- out_all$P3
           p <- plot_rates_B(out_all, "Overall",
-                            paste("Miss Percentages", "\n",
+                            paste("Four-Seam Miss Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 0) +
             add_zone("black")
@@ -406,7 +408,7 @@ server <- function(input, output, session) {
         if(input$type == "hit"){
           out_all$PCT <- out_all$P4
           p <- plot_rates_B(out_all, "Overall",
-                            paste("Hit Avgs", "\n",
+                            paste("Four-Seam Hit Avgs", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 3,
                             label_size = 4) +
@@ -415,7 +417,7 @@ server <- function(input, output, session) {
         if(input$type == "HR"){
           out_all$PCT <- out_all$P5
           p <- plot_rates_B(out_all, "Overall",
-                            paste("HR Percentages", "\n",
+                            paste("Four-Seam HR Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 1) +
             add_zone("black")
