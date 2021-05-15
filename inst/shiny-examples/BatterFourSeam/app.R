@@ -561,12 +561,12 @@ server <- function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = "batter_rates_output.csv",
     content = function(file) {
-      pid <- get_id(input$name) %>%
-        pull(key_mlbam)
+      pid <- get_id(input$name)
       df <- filter(FF_15_20, Season %in% as.numeric(input$year),
-                   pitcher == pid)
+                   batter == pid$key_mlbam)
       out <- bin_FF_locations_B(df, c(-0.85, 0.85, 0.425),
                                 c(1.6, 3.5, 0.475))
+      out$Name <- pid$Name
       write.csv(out, file, row.names = FALSE)
     }
   )
