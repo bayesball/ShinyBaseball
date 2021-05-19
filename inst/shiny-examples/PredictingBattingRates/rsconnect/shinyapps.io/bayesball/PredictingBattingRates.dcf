@@ -1,0 +1,13 @@
+name: PredictingBattingRates
+title: PredictingBattingRates
+username:
+account: bayesball
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4150317
+bundleId: 4616378
+url: https://bayesball.shinyapps.io/PredictingBattingRates/
+when: 1621435379.83425
+lastSyncTime: 1621435379.83427
+asMultiple: FALSE
+asStatic: FALSE
