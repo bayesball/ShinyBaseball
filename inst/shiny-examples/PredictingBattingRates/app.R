@@ -2,6 +2,8 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(readr)
+library(LearnBayes)
+library(tidyr)
 
 #source("prediction_exercise.R")
 #source("fit_bb_model2.R")
@@ -13,7 +15,6 @@ prediction_exercise <- function(d,
                                 type = "H",
                                 logn = 3,
                                 ab = c(1, 1)){
-  require(BApredict)
   # define Outcome variable
   if(type == "H"){
     d %>% mutate(Outcome = ifelse(H == 1, 1, 0)) ->
@@ -90,7 +91,7 @@ fit_bb_model2 <- function(data, prior){
   K <- exp(mode[2])
   list(eta = eta, K = K,
        d = data.frame(data,
-                      est = (data$y + K * eta) / (data$n + K)))
+             est = (data$y + K * eta) / (data$n + K)))
 }
 
 # shiny app
@@ -121,13 +122,40 @@ ui <- fluidPage(
     )),
     column(8, wellPanel(
       tabsetPanel(type = "tabs",
-                  tabPanel("Rate Estimates",
+                  tabPanel("Intro",
+                           hr(),
+                           h4("Prediction Problem:"),
+                           p("Have Retrosheet data
+                             for all at-bats during 2019
+                             season.  Divide data into
+                             'Train' and 'Test' groups.
+                             The problem is to accurately
+                             predict the batting rates in the
+                             Test group from the observed rates in
+                             the Train group."),
+                           img(src="Rplot.png",
+                               height = 200, width = 300),
+                           hr(),
+                           tags$ul(
+                           tags$li("Choose Outcome -- either
+                           H (hit), SO (strikeout) or
+                           HR (home run)."),
+                           tags$li("Choose the Date Breakpoint that divides
+                             the Test and Train datasets."),
+                           tags$li("Choose the Minimum number of
+                             At-Bats for the Train dataset.")
+                           ),
+                           p("This app illustrates the use of a
+                             multilevel model to predict
+                             the rates in the Test dataset.")
+                           ),
+                  tabPanel("Rates",
                            plotOutput("plot1",
                                       height = "405px"),
                            h5("Sum of Squared Errors in Predicting Future Rates:"),
                            tableOutput("table2")
                   ),
-                  tabPanel("Talent Curve",
+                  tabPanel("Talents",
                            plotOutput("plot2",
                                       height = "405px"),
                            hr(),
@@ -159,12 +187,13 @@ ui <- fluidPage(
                     dataset."),
                    p("Point estimates for the parameters K and eta
                     are shown in the left panel.
-                    The `Rate Estimates` tab displays dotplots for
+                    The `Rates` tab displays dotplots for
                     the observed first-period rates and the predicted
                     second-period rates.  The sum of squared
                     prediction errors are displayed both for the observed
                     first-period rates and the
-                    multilevel model predictions.  The `Talent Curve`
+                    multilevel model predictions.  The
+                    `Talents`
                     tab shows the estimated Beta density curve for the
                     true rates.")))
     ))
