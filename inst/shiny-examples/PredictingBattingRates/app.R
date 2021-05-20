@@ -42,7 +42,7 @@ prediction_exercise <- function(d,
               AVG = y / n) %>%
     filter(n >= minAB) -> S1
   fit <- fit_bb_model2(S1,
-                  prior = list(ab = ab, logn = logn))
+                       prior = list(ab = ab, logn = logn))
   S1$MLM_Predicted <- fit$d$est
   # compute AVG in 2nd part and merge with 1st part
   d2 %>%
@@ -121,24 +121,24 @@ ui <- fluidPage(
     )),
     column(8, wellPanel(
       tabsetPanel(type = "tabs",
-         tabPanel("Rate Estimates",
-           plotOutput("plot1",
-                 height = "405px"),
-           h5("Sum of Squared Errors in Predicting Future Rates:"),
-           tableOutput("table2")
+                  tabPanel("Rate Estimates",
+                           plotOutput("plot1",
+                                      height = "405px"),
+                           h5("Sum of Squared Errors in Predicting Future Rates:"),
+                           tableOutput("table2")
                   ),
-         tabPanel("Talent Curve",
-                  plotOutput("plot2",
-                             height = "405px"),
-        hr(),
-        p("This graph displays the estimated Beta density for the true rates
+                  tabPanel("Talent Curve",
+                           plotOutput("plot2",
+                                      height = "405px"),
+                           hr(),
+                           p("This graph displays the estimated Beta density for the true rates
           using the Beta/Binomial multilevel model where the Beta shape parameters
           are given by a = K eta and b = K (1 - eta).")
-         ),
-         tabPanel("Description",
-                  p('This app illustrates prediction of batting rates using the following
+                  ),
+          tabPanel("Description",
+                   p('This app illustrates prediction of batting rates using the following
                     Beta/Binomial multilevel model'),
-                  p('We observe y_1, ..., y_N,
+                   p('We observe y_1, ..., y_N,
                       where y_i, the count of either H, SO, or HR
                       for player i in AB_i at-bats,
                       is Binomial(AB_i, p_i) where p_i is the
@@ -147,17 +147,17 @@ ui <- fluidPage(
                       shape parameters K eta and K (1 - eta).  At the
                       last stage, eta is assumed Beta(1, 1) and log K
                       is Logistic with location 3 and scale 1.'),
-                  p('Given values of K and eta, the posterior estimate of
+                   p('Given values of K and eta, the posterior estimate of
                     the true rate p_i is (AB_i / (AB_i + K) (y_i / AB_i) +
                     (K / (AB_i + K) eta.'),
-                  h5('Using the App'),
-                  p("One selects a date during the 2019 season.  One trains
+                   h5('Using the App'),
+                   p("One selects a date during the 2019 season.  One trains
                     the model using hitting data up to that date, and predicts
                     rates for hitting data after that date.  One
                     decides on the type of rate (H, SO or HR) and the
                     minimum number of AB for batters in the training
                     dataset."),
-                  p("Point estimates for the parameters K and eta
+                   p("Point estimates for the parameters K and eta
                     are shown in the left panel.
                     The `Rate Estimates` tab displays dotplots for
                     the observed first-period rates and the predicted
@@ -168,7 +168,7 @@ ui <- fluidPage(
                     tab shows the estimated Beta density curve for the
                     true rates.")))
     ))
-))
+  ))
 
 server <- function(input, output, session) {
   output$plot1 <- renderPlot({
@@ -189,7 +189,7 @@ server <- function(input, output, session) {
                        " Rates & MLM Predictions",
                        sep = "")
     s1$Type <- factor(s1$Type,
-                         levels = c("Observed", "MLM_Predicted"))
+                      levels = c("Observed", "MLM_Predicted"))
     ggplot(s1, aes(Type, Estimate)) +
       geom_jitter(width = 0.2, color = "red") +
       ylab("Rate") + xlab("Method") +
@@ -223,16 +223,16 @@ server <- function(input, output, session) {
     b <- round(out$K * (1 - out$eta), 1)
 
     s <- sqrt(out$eta * (1 - out$eta) / (out$K + 1))
-    x_lo <- out$eta - 4 * s
-    x_hi <- out$eta + 4 * s
+    x_lo <- max(out$eta - 4 * s, 0)
+    x_hi <- min(out$eta + 4 * s, 1)
 
     TH <- theme(plot.title = element_text(colour = "white",
-             size = 20, hjust = 0.5),
-             plot.subtitle = element_text(colour = "white",
-                                       size = 20, hjust = 0.5),
-             text = element_text(size = 18),
-             panel.background = element_rect(fill = "bisque",
-                                             colour = "grey")) +
+                                          size = 20, hjust = 0.5),
+                plot.subtitle = element_text(colour = "white",
+                                             size = 20, hjust = 0.5),
+                text = element_text(size = 18),
+                panel.background = element_rect(fill = "bisque",
+                                                colour = "grey")) +
       theme(plot.background = element_rect(fill = "grey32"),
             axis.text = element_text(color = "white"),
             axis.title = element_text(color = "white"))
@@ -240,15 +240,15 @@ server <- function(input, output, session) {
     Subtitle <- paste("Talent Curve for", input$type, "Rates")
     x <- NULL
     ggplot(data.frame(x = c(x_lo, x_hi)), aes(x)) +
-         stat_function(fun = dbeta,
-                      geom = "line",
-                      color = "red",
-                      size = 1.5,
-                      args = list(shape1 = a, shape2 = b)) +
-                      labs(title = Title, subtitle = Subtitle) +
-                      TH +
-                      xlab(paste(input$type, "Rate")) +
-                      ylab("Density")
+      stat_function(fun = dbeta,
+                    geom = "line",
+                    color = "red",
+                    size = 1.5,
+                    args = list(shape1 = a, shape2 = b)) +
+      labs(title = Title, subtitle = Subtitle) +
+      TH +
+      xlab(paste(input$type, "Rate")) +
+      ylab("Density")
   })
 
   output$table1 <- renderTable({
