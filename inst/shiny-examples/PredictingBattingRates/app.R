@@ -5,8 +5,6 @@ library(readr)
 library(LearnBayes)
 library(tidyr)
 
-#source("prediction_exercise.R")
-#source("fit_bb_model2.R")
 retro_data <- read_csv("https://raw.githubusercontent.com/bayesball/Predicting_Outcomes/main/retro2019data.csv")
 
 prediction_exercise <- function(d,
