@@ -8,7 +8,7 @@ https://bayesball.github.io/Introduction_to_ShinyBaseball.html
 
 This package depends on the following packages that should be installed first.
 
-shiny, ggplot2, dplyr, stringr, tidyr
+shiny, ggplot2, dplyr, stringr, tidyr, LearnBayes
 
 To install the ShinyBaseball package, use the install_github() function from the remotes package:
 
