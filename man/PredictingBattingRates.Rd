@@ -1,5 +1,5 @@
 \name{Predicting Batting Rates}
-\alias{BatterFourSeam}
+\alias{Predicting Batting Rates}
 
 \title{
   Shiny App for Illustrating Predicting Batting Rates
