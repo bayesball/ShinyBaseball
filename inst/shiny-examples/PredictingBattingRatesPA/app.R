@@ -1,3 +1,5 @@
+# adjust so that we have PA instead of AB
+
 library(shiny)
 library(ggplot2)
 library(dplyr)
@@ -9,7 +11,7 @@ retro_data <- read_csv("https://raw.githubusercontent.com/bayesball/Predicting_O
 
 prediction_exercise <- function(d,
                                 date_break,
-                                minAB = 100,
+                                minPA = 100,
                                 type = "H",
                                 logn = 3,
                                 ab = c(1, 1),
@@ -34,17 +36,15 @@ prediction_exercise <- function(d,
     d <- filter(d, BAT_FLD_CD != 1)
   }
   # divide data into two parts using date_break
-  d1 <- filter(d, Date <= date_break,
-               AB_FL == TRUE)
-  d2 <- filter(d, Date > date_break,
-               AB_FL == TRUE)
+  d1 <- filter(d, Date <= date_break)
+  d2 <- filter(d, Date > date_break)
   # fit bb model to data from 1st part
   d1 %>%
     group_by(BAT_ID) %>%
     summarize(y = sum(Outcome),
               n = n(),
               AVG = y / n) %>%
-    filter(n >= minAB) -> S1
+    filter(n >= minPA) -> S1
   fit <- fit_bb_model2(S1,
                        prior = list(ab = ab, logn = logn))
   S1$MLM_Predicted <- fit$d$est
@@ -89,7 +89,7 @@ fit_bb_model2 <- function(data, prior){
   datapar <- list(df = data,
                   ab = prior$ab,
                   logn = prior$logn)
-  mode <- laplace(bblogpost, c(0, prior$logn), datapar)$mode
+  mode <- laplace(bblogpost, c(1, 1), datapar)$mode
   eta <- exp(mode[1])/(1 + exp(mode[1]))
   K <- exp(mode[2])
   list(eta = eta, K = K,
@@ -114,8 +114,8 @@ ui <- fluidPage(
       dateInput("date_break",
                 label = h6("Date Breakpoint:"),
                 value = "2019-07-01"),
-      sliderInput("minAB",
-                  h6("Minimum At-Bats:"),
+      sliderInput("minPA",
+                  h6("Minimum Plate Appearances:"),
                   min = 1,
                   max = 300,
                   value = 1),
@@ -131,13 +131,13 @@ ui <- fluidPage(
     )),
     column(8, wellPanel(
       h4(id="big-heading",
-         "Predicting 2019 Batting Rates", align = "center"),
+         "Predicting 2019 Batting Rates (PA)", align = "center"),
       tabsetPanel(type = "tabs",
                   tabPanel("Intro",
                            hr(),
                            h5("Prediction Problem:"),
                            p("Have Retrosheet data
-                             for all at-bats during 2019
+                             for all plate appearances during 2019
                              season.  Divide data into
                              'Train' and 'Test' groups.
                              The problem is to accurately
@@ -154,7 +154,7 @@ ui <- fluidPage(
                            tags$li("Choose the Date Breakpoint that divides
                              the Test and Train datasets."),
                            tags$li("Choose the Minimum number of
-                             At-Bats for the Train dataset."),
+                             Plate Appearances for the Train dataset."),
                            tags$li("Do you wish to exclude pitcher batting?
                                    (Yes or No)")
                            ),
@@ -174,16 +174,15 @@ ui <- fluidPage(
                            hr(),
                            p("This graph displays the estimated Beta density for the true rates
           using the Beta/Binomial multilevel model where the Beta shape parameters
-          are given by a = K eta and b = K (1 - eta).  The mean and standard
-          deviation are eta and SD = sqrt(eta (1 - eta) / (K + 1)).")
+          are given by a = K eta and b = K (1 - eta).")
                   ),
           tabPanel("Description",
                    p('This app illustrates prediction of batting rates using the following
                     Beta/Binomial multilevel model'),
                    p('We observe y_1, ..., y_N,
                       where y_i, the count of either H, SO, or HR
-                      for player i in AB_i at-bats,
-                      is Binomial(AB_i, p_i) where p_i is the
+                      for player i in PA_i plate appearances,
+                      is Binomial(PA_i, p_i) where p_i is the
                       true rate.  Assume p_1, ..., p_N
                       are drawn from a Beta distribution with
                       shape parameters K eta and K (1 - eta).  At the
@@ -197,11 +196,10 @@ ui <- fluidPage(
                     the model using hitting data up to that date, and predicts
                     rates for hitting data after that date.  One
                     decides on the type of rate (H, SO or HR), the
-                    minimum number of AB for batters in the training
+                    minimum number of PA for batters in the training
                     dataset, and whether or not you wish to exclude pitchers
                     batting from the dataset."),
-                   p("Point estimates for K and eta and
-                     the corresponding talent standard deviation
+                   p("Point estimates for the parameters K and eta
                     are shown in the left panel.
                     The `Rates` tab displays dotplots for
                     the observed first-period rates and the predicted
@@ -220,7 +218,7 @@ server <- function(input, output, session) {
 
     out <- prediction_exercise(retro_data,
                                input$date_break,
-                               input$minAB,
+                               input$minPA,
                                input$type,
                                exclude_pitchers = input$exclude_pitcher)
 
@@ -237,7 +235,7 @@ server <- function(input, output, session) {
     the_subtitle <- paste("Date Breakpoint: ",
                           input$date_break,
                           ",  minAB = ",
-                          input$minAB, sep = "")
+                          input$minPA, sep = "")
     if(input$exclude_pitcher == "Yes"){
       the_subtitle <- paste(the_subtitle, ", Pitchers Excluded",
                             sep = "")
@@ -270,7 +268,7 @@ server <- function(input, output, session) {
   output$plot2 <- renderPlot({
     out <- prediction_exercise(retro_data,
                                input$date_break,
-                               input$minAB,
+                               input$minPA,
                                input$type,
                                exclude_pitchers = input$exclude_pitcher)
 
@@ -316,19 +314,17 @@ server <- function(input, output, session) {
   output$table1 <- renderTable({
     out <- prediction_exercise(retro_data,
                                input$date_break,
-                               input$minAB,
+                               input$minPA,
                                input$type,
                                exclude_pitchers = input$exclude_pitcher)
     data.frame(eta = out$eta,
-               K = out$K,
-               SD = sqrt(out$eta * (1 - out$eta) /
-                           (out$K + 1)))
+               K = out$K)
   }, digits = 3)
 
   output$table2 <- renderTable({
     out <- prediction_exercise(retro_data,
                                input$date_break,
-                               input$minAB,
+                               input$minPA,
                                input$type,
                                exclude_pitchers = input$exclude_pitcher)
     d <- out$crit
@@ -341,11 +337,11 @@ server <- function(input, output, session) {
     content = function(file) {
       out <- prediction_exercise(retro_data,
                                  input$date_break,
-                                 input$minAB,
+                                 input$minPA,
                                  input$type,
                   exclude_pitchers = input$exclude_pitcher)$S12
       out$Date_Break <- input$date_break
-      out$Min_AB <- input$minAB
+      out$Min_AB <- input$minPA
       out$Type <- input$type
       out$Pitchers_Excluded <- input$exclude_pitcher
       write.csv(out, file, row.names = FALSE)

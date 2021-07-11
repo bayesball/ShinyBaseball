@@ -5,9 +5,9 @@ account: bayesball
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4150317
-bundleId: 4621690
+bundleId: 4646627
 url: https://bayesball.shinyapps.io/PredictingBattingRates/
-when: 1621542525.77216
-lastSyncTime: 1621542525.77218
+when: 1622122010.89058
+lastSyncTime: 1622122010.8906
 asMultiple: FALSE
 asStatic: FALSE
