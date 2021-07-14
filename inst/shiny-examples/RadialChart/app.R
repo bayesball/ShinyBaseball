@@ -170,14 +170,14 @@ server <- function(input, output, session) {
     pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
 
-    sc_subset <- sc2019_ip %>%
+    sc_subset <- sc2019_ip_radial %>%
       filter(pitcher == pid,
              game_date == as.character(input$date))
     #   sc_subset <- sc2019_ip[sc2019_ip$pitcher == pid &
     #                 sc2019_ip$game_date ==
     #                   as.character(input$date), ]
 
-    sc2019_ip %>%
+    sc2019_ip_radial %>%
       filter(pitcher == pid) %>% pull(game_date) %>%
       as.character() %>% unique() -> the_dates
     data.frame(Start_Dates = the_dates)
@@ -203,7 +203,7 @@ server <- function(input, output, session) {
     pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
 
-   sc_subset <- sc2019_ip %>%
+   sc_subset <- sc2019_ip_radial %>%
      filter(pitcher == pid,
              game_date == as.character(input$date))
  #   sc_subset <- sc2019_ip[sc2019_ip$pitcher == pid &

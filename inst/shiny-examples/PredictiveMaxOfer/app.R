@@ -1,6 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
+library(LearnBayes)
 
 post_pred_simulation <- function(beta_ab,
                                  N,
@@ -43,23 +44,17 @@ post_pred_simulation <- function(beta_ab,
              label = "Obs", color = "red", size = 5)
 }
 
-
 # shiny app
 ui <- fluidPage(
   theme = bslib::bs_theme(version = 4,
                           bootswatch = "darkly"),
   fluidRow(
     column(4, wellPanel(
-      sliderInput("eta",
-                  h6("Prior Mean eta:"),
+      sliderInput("qbeta",
+                  h6("90% Bounds for Hit Probability p:"),
                   min = .15,
                   max = .35,
-                  value = .25),
-      sliderInput("K",
-                  h6("Prior Precision K:"),
-                  min = 50,
-                  max = 500,
-                  value = 200),
+                  value = c(.2, .3)),
       sliderInput("N",
                   h6("Number of At-Bats AB:"),
                   min = 100,
@@ -81,7 +76,7 @@ ui <- fluidPage(
       tabsetPanel(type = "tabs",
                   tabPanel("Plot",
                            plotOutput("plot1",
-                                      height = "500px")
+                                      height = "405px")
                   ),
           tabPanel("Description",
                    p(''),
@@ -90,16 +85,16 @@ ui <- fluidPage(
                    p('Assume y_1, ..., y_N
                       are independent Bernoulli outcomes with probability
                       of success p.  Assume p has a Beta distribution with
-                      shape parameters K eta and K (1 - eta).  The parameter
-                      eta is the prior mean and K is a precision parameter.'),
+                      shape parameters a and b.'),
                    p("The ofers are the at-bats between successes
                      in the binary sequence."),
                    p('Interested in the predictive distribution of the
                      maximum length of an ofer or the sum of squared ofer lengths
                      among the Bernoulli outcomes.'),
                    h5('Using the App'),
-                   p("One inputs the prior mean eta and prior precision K for
-                     the hitting probability p.  Also one inputs the number of
+                   p("One inputs the limits for a 90% central probability interval for
+                     the hitting probability p.  (The values of the beta
+                     shape parameters are found that match this input.) Also one inputs the number of
                      at-bats N, the type of streaky measure, and the observed value
                      of the streaky measure."),
                    p("Histogram displays the simulated predictive distribution of the
@@ -114,10 +109,14 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   output$plot1 <- renderPlot({
     options(warn=-1)
-    beta_ab <- c(input$K * input$eta,
-                 input$K * (1 - input$eta))
-    the_title <- paste("eta = ", input$eta, ", K = ",
-                       input$K, ", AB = ", input$N,
+    q1 <- list(p = .05,
+               x = input$qbeta[1])
+    q2 <- list(p = .95,
+               x = input$qbeta[2])
+    beta_ab <- beta.select(q1, q2)
+    the_title <- paste("90% Interval for p: (", input$qbeta[1],
+                       ", ", input$qbeta[2], "), N = ",
+                       input$N,
                        sep = "")
     cluster <- function(ofers){
       sum(ofers ^ 2)
