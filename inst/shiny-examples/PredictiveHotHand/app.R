@@ -2,6 +2,7 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(LearnBayes)
+library(Lahman)
 
 pp_markov_simulation <- function(beta1_ab, beta2_ab, rho,
                                  player_name,

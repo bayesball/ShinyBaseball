@@ -20,9 +20,9 @@ radial_plot <- function(sc_ip, type,
   sc_ip <- sc_ip %>%
     mutate(BB_Type = ifelse(launch_angle > 50,
                             "pop up",
-                            ifelse(launch_angle > 25,
+                     ifelse(launch_angle > 25,
                                    "fly ball",
-                                   ifelse(launch_angle > 10,
+                    ifelse(launch_angle > 10,
                                           "line drive",
                                           "ground ball"))))
   # change to radial coordinates
