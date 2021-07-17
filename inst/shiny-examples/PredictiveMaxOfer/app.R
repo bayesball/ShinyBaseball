@@ -32,7 +32,7 @@ post_pred_simulation <- function(beta_ab,
     labs(title = the_title,
          subtitle = the_subtitle) +
     theme(plot.title = element_text(colour = "blue",
-                                    size = 18, hjust = 0.5,
+                                    size = 16, hjust = 0.5,
                                     vjust = 0.8, angle = 0),
           plot.subtitle = element_text(colour = "red",
                                        size = 16, hjust = 0.5,
@@ -117,6 +117,9 @@ server <- function(input, output, session) {
     the_title <- paste("90% Interval for p: (", input$qbeta[1],
                        ", ", input$qbeta[2], "), N = ",
                        input$N,
+                       "\nBeta(", round(beta_ab[1], 1),
+                       ", ", round(beta_ab[2], 1),
+                       ") Prior",
                        sep = "")
     cluster <- function(ofers){
       sum(ofers ^ 2)
