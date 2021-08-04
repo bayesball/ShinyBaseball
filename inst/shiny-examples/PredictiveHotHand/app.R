@@ -29,7 +29,7 @@ pp_markov_simulation <- function(beta1_ab, beta2_ab, rho,
     dG <- data.frame(game_id = unique(d$game_id)) %>%
       mutate(Game = row_number())
 
-    d <- inner_join(d, dG, by = "game_id") %>%
+    inner_join(d, dG, by = "game_id") %>%
       select(Game, Hit)
   }
   ppsim_S <- function(beta1_ab, beta2_ab, rho,
