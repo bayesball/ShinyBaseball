@@ -1,5 +1,5 @@
 \name{PredictiveMaxOfer}
-\alias{Predictive Checking of Binomial Model}
+\alias{PredictiveMaxOfer}
 
 \title{
   Shiny App for Illustrating Predictive Checking
