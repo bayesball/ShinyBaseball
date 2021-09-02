@@ -21,7 +21,7 @@
  \item{events}{outcome of the resulting plate appearance}
 \item{HR}{indicates if a home run was hit (1) or not (0)}
 \item{H}{indicates if a hit was recorded (1) or not (0)
-}
+}}}
 \source{
 Basball Savant
 }

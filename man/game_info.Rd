@@ -14,7 +14,7 @@
   \describe{
   \item{game_info}{date of game}
   \item{game_pk}{Statcast game id}
-}
+}}
 \source{
 Baseball Savant
 }

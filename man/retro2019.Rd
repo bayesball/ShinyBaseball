@@ -18,7 +18,7 @@
   \item{AB_FL}{indicator if an official at-bat}
   \item{EVENT_CD}{code for PA event}
   \item{INN_CT}{inning number}
-}
+}}
 \source{
 Retrosheet
 }
