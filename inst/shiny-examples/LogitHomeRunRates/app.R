@@ -45,7 +45,7 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
   }
   centertitle <- function (){
     theme(plot.title = element_text(
-      colour = "white", size = 16,
+      colour = "white", size = 14,
       face = "bold",
       hjust = 0.5, vjust = 0.8, angle = 0))
   }
@@ -94,11 +94,13 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
     filter(Season == season1) %>%
     select(Season, la, ls,
            IP, N, HR,
+           p_inplay, p_hr,
            logit_inplay, logit_hr) -> S1
   S %>%
     filter(Season == season2) %>%
     select(Season, la, ls,
            IP, N, HR,
+           p_inplay, p_hr,
            logit_inplay, logit_hr) -> S2
 
   S12 <- inner_join(S1, S2,
@@ -106,11 +108,20 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
     mutate(diff_inplay = logit_inplay.y -
              logit_inplay.x,
            diff_hr = logit_hr.y -
-             logit_hr.x)
+             logit_hr.x,
+           Z_inplay = diff_inplay /
+             sqrt(1 / IP.x / p_inplay.x / (1 - p_inplay.x) +
+                  1 / IP.y / p_inplay.y / (1 - p_inplay.y)),
+           Z_hr = diff_hr /
+             sqrt(1 / N.x / p_hr.x / (1 - p_hr.x) +
+                  1 / N.y / p_hr.y / (1 - p_hr.y)))
 
   the_title = paste("Logit(", season2,
                     ") Minus Logit(", season1,
                     ")", sep = "")
+  the_title2 = paste("Z Score comparing ", season2,
+                    " and ", season1,
+                    sep = "")
 
   xlim_lo <- min(LA_breaks) - diff(LA_breaks)[1] / 4
   xlim_hi <- max(LA_breaks) + diff(LA_breaks)[1] / 4
@@ -171,6 +182,61 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
       panel.background = element_rect(fill = "bisque",
                                       colour = "grey"))
 
+  plot3 <- ggplot(S12, aes(la, ls,
+                           label = round(Z_inplay, 2))) +
+    geom_label(size = 6,
+               aes(fill = Z_inplay > 0),
+               color = "white") +
+    theme(legend.position = "none") +
+    xlim(xlim_lo, xlim_hi) +
+    ylim(ylim_lo, ylim_hi) +
+    ggtitle(paste("In-Play Rates:", the_title2)) +
+    centertitle() +
+    increasefont() +
+    xlab("Launch Angle") +
+    ylab("Launch Speed") +
+    geom_vline(xintercept = LA_breaks,
+               color = "blue") +
+    geom_hline(yintercept = LS_breaks,
+               color = "blue") +
+    scale_fill_manual(values =
+                        c("darkorange2",
+                          "dodgerblue")) +
+    theme(plot.background = element_rect(fill = "grey25"),
+          axis.text = element_text(color = "white"),
+          axis.title = element_text(color = "white")) +
+    theme(
+      panel.background = element_rect(fill = "bisque",
+                                      colour = "grey"))
+
+  plot4 <- ggplot(S12, aes(la, ls,
+                           label = round(Z_hr, 2))) +
+    geom_label(size = 6,
+               aes(fill = Z_hr > 0),
+               color = "white") +
+    theme(legend.position = "none") +
+    xlim(xlim_lo, xlim_hi) +
+    ylim(ylim_lo, ylim_hi) +
+    ggtitle(paste("Home Run Rates:", the_title2)) +
+    centertitle() +
+    increasefont() +
+    xlab("Launch Angle") +
+    ylab("Launch Speed") +
+    geom_vline(xintercept = LA_breaks,
+               color = "blue") +
+    geom_hline(yintercept = LS_breaks,
+               color = "blue") +
+    scale_fill_manual(values =
+                        c("darkorange2",
+                          "dodgerblue")) +
+    theme(plot.background = element_rect(fill = "grey25"),
+          axis.text = element_text(color = "white"),
+          axis.title = element_text(color = "white")) +
+    theme(
+      panel.background = element_rect(fill = "bisque",
+                                      colour = "grey"))
+
+
   M_inplay <- apply(matrix(round(S12$diff_inplay, 2),
                            length(LS_breaks) - 1,
                            length(LA_breaks) - 1),
@@ -192,6 +258,8 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
   list(S = S12,
        plot1 = plot1,
        plot2 = plot2,
+       plot3 = plot3,
+       plot4 = plot4,
        M_inplay = M_inplay,
        M_hr = M_hr)
 }
@@ -234,8 +302,15 @@ ui <- fluidPage(
       downloadButton("downloadData", "Download Rates")
     )),
     column(8,
+           tabsetPanel(type = "tabs",
+                       tabPanel("Difference in Logits",
            plotOutput("plot1",
-                      height = "700px")
+                      height = "670px")
+                       ),
+                       tabPanel("Z-Score",
+           plotOutput("plot2",
+                      height = "670px")
+           ))
       )
       )
 )
@@ -253,6 +328,20 @@ server <- function(input, output, session) {
                        as.numeric(input$year2))
     grid.arrange(out1$plot1,
                  out1$plot2)
+  }, res = 96)
+
+  output$plot2 <- renderPlot({
+    step_LA <- diff(input$rX) / input$nX
+    step_LS <- diff(input$rY) / input$nY
+    LA_breaks <- seq(input$rX[1], input$rX[2],
+                     by = step_LA)
+    LS_breaks <- seq(input$rY[1], input$rY[2],
+                     by = step_LS)
+    out1 <- logit_work(sc, LA_breaks, LS_breaks,
+                       as.numeric(input$year1),
+                       as.numeric(input$year2))
+    grid.arrange(out1$plot3,
+                 out1$plot4)
   }, res = 96)
 
   output$downloadData <- downloadHandler(
