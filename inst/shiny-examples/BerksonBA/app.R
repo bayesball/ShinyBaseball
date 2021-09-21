@@ -34,29 +34,29 @@ BA_graph <- function(season, minAB, minBA){
     filter(AB >= minAB)  %>%
     mutate(BA = H / AB,
            SO_Rate = SO / AB,
-           BABIP = H / (AB - SO),
+           BACON = H / (AB - SO),
            InPlay_Rate = 1 - SO_Rate) -> S
 
   S %>%
     filter(AB >= minAB) -> S_min
 
   select(filter(S_min, BA >= minBA),
-         InPlay_Rate, BABIP) %>% cor() -> COR
+         InPlay_Rate, BACON) %>% cor() -> COR
 
   myf <- function(x, con){
     con / x
   }
   ggplot() +
     geom_point(data = filter(S_min, BA >= minBA),
-               mapping = aes(InPlay_Rate, BABIP),
+               mapping = aes(InPlay_Rate, BACON),
                color = "red") +
     geom_smooth(data = filter(S_min, BA >= minBA),
-                mapping = aes(InPlay_Rate, BABIP),
+                mapping = aes(InPlay_Rate, BACON),
                 method = "lm",
                 formula = "y ~ x",
                 se = FALSE) +
     geom_point(data = filter(S_min, BA < minBA),
-               mapping = aes(InPlay_Rate, BABIP),
+               mapping = aes(InPlay_Rate, BACON),
                color = "grey") +
     stat_function(fun = myf,
                   args = list(con = minBA),
