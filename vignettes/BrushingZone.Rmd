@@ -1,0 +1,57 @@
+---
+title: "BrushingZone"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BrushingZone}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+```
+
+
+## Introduction
+
+This app illustrates the use of brushing to
+display hitting measures for a specific 2019 batter over selected regions of the zone.  
+
+## Using the BrushingZone App
+
+To use this app, one enters in the full name of a 2019 hitter of interest -- in this example, I am entering in Mike Trout.  Then you indicate what measure to focus on.
+
+If you select Hit or Home Run, you will see a scatterplot of all balls put in play where the color of the point indicates success or failure.  If you choose a continuous measure such as Launch Speed or Expected BA, you will see colored points  where higher values are red and lower values are blue.
+
+One brushes over the scatterplot by using the mouse to select a region over the zone.  For example, if the measure is Launch Speed and I select the lower-right section inside the zone, I see that in this region ...
+
+- He has 40 hits out of 89 balls in play (BIP) for a batting average of 40/89 = 0.449.
+
+- He has 15 home runs out of 819 BIP for a HR rate of 0.169.
+
+- The mean launch speed over this region is 96.904 mph.
+
+If you click on an individual point, you will see the launch speed, launch angle and expected batting average for that particular BIP.
+
+```{r tabsets, echo=FALSE}
+library(shiny)
+library(ShinyBaseball)
+shinyAppDir(
+  system.file("shiny-examples/BrushingZone", 
+              package = "ShinyBaseball"),
+  options = list(
+    width = "120%", height = 520
+  )
+)
+```
+
+
+## Things to Try
+
+- Think of another hitter of interest who played during the 2019 season.  By choosing different measures and brushing over different areas about the zone, discover the areas about the zone where the hitter was successful and the areas about the zone where the hit struggled.
+
+- For this same hitter, by clicking on particular points, find several locations about the zone where the hitter hit the ball relatively hard.
+

@@ -1,0 +1,56 @@
+---
+title: "HomeRunPaths"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{HomeRunPaths}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+```
+
+
+## Introduction
+
+This app displays the career home run path for a selected group of home run hitters.  It displays the cumulative home run count as a function of each player's age.  In addition, it summarizes the home run paths with lines and shows residuals (deviations) from these lines.
+
+## Using the HomeRunPaths App
+
+The app displays the last names of the top 30 hitters with respect to career home runs. One can select one or more players to compare, although the graphical comparison is easier with a small number of players.
+
+The HomeRunPaths app displays the home run paths and associated fitted lines.  The Fitted Slopes tab displays a scatterplot of the path slopes and the home run career totals.  The Residuals from Fit tab displays smoothed residuals from the line fits.
+
+Comparing Hank Aaron and Alex Rodriguez, we see ...
+
+- Rodriguez had a greater home run count than Aaron at practically all ages, but Rodriguez's home run productivity slowed down at age 36 and Aaron ultimately had the higher career total.
+
+- Rodriguez had a higher slope estimate than Aaron.
+
+- Looking at the smoothed residuals, Aaron appeared to remarkably consistent in his pattern of hitting home runs.  In contrast, Rodriguez hit home runs at a high rates between ages 30-35 and his home run productivity dropped in his last years of his career.
+
+```{r tabsets, echo=FALSE}
+library(shiny)
+library(broom)
+library(ShinyBaseball)
+shinyAppDir(
+  system.file("shiny-examples/HomeRunPaths", 
+              package = "ShinyBaseball"),
+  options = list(
+    width = "140%", height = 700
+  )
+)
+```
+
+
+## Things to Try
+
+Think of particular groups of 2 or 3 players to comopare with respect to home run hitting.  For each comparison, make general comments about 
+
+- the differences in home run paths
+- the differences in slopes
+- the residuals from the straight-line fits

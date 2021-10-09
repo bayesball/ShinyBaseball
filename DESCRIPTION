@@ -4,7 +4,7 @@ Title: Shiny Baseball Applications
 Version: 0.4.9
 Author: Jim Albert
 VignetteBuilder: knitr
-Suggests: 
+Suggests: knitr, rmarkdown
 Imports:  ggplot2, shiny, dplyr
 Maintainer: Jim Albert <albert@bgsu.edu>
 URL: https://github.com/bayesball/ShinyBaseball
@@ -12,3 +12,4 @@ Description: A collection of Shiny functions useful for exploring baseball data.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
+VignetteBuilder: knitr

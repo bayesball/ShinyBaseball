@@ -1,0 +1,53 @@
+---
+title: "PredictingBattingRates"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{PredictingBattingRates}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+```
+
+
+## Introduction
+
+This app illustrates a prediction problem.  One collects the batting rates for all players in the first part of the season, and one wishes to predict the players' batting rates for the second part of the season.  This app shows that multilevel model (so-called shrinkage) estimates are superior to the naive rate estimates in this prediction problem.
+
+## Using the PredictingBattingRates App
+
+One first decides what type of rate to consider -- either H (batting average), SO (strikeout rate), or HR (home run rate).  One chooses the date during the 2019 season that will divide the two data parts.  One chooses the minimum number of at-bats -- only players who exceeds that minimum number of AB in the first part of the season will be included in the study.  Does one wish to exclude batting data from pitchers -- either select Yes or No.
+
+Here we are considering all non-pitchers and select July 1, 2019 as the dividing point.  The estimates of the multilevel model parameters eta and K are displayed.  The estimate of eta is 0.251 which means that the predictions will shrink the observed rate towards 0.251.  The estimate of the precision  parameter K is 263.836 -- this indicates how much the observed rate is shrunk towards 0.251.
+
+By clicking on the Rates tab, one sees parallel dotplots of the observed and multilevel predictions.  The bottom area displays the sum of squared prediction errors of both the observed and multilevel estimates -- the sum of squared prediction errors is significantly smaller for the multilevel predictions.
+
+The Talents tab displays an estimate of the density of the rate probabilities for all players.  We call this the estimated talent curve for the chosen group of players.
+
+The Description tab provides more explanation for the multilevel modeling that is used in this application.
+
+
+```{r tabsets, echo=FALSE}
+library(shiny)
+library(ShinyBaseball)
+shinyAppDir(
+  system.file("shiny-examples/PredictingBattingRates",
+              package = "ShinyBaseball"),
+  options = list(
+    width = "100%", height = 850
+  )
+)
+```
+
+## Things to Try
+
+1.  What happens if you don't exclude the pitcher batting?  How does that change the estimated values of K and eta?  Can you explain the reason for the change?
+
+2.  In this exercise, we have focused on hit rates (batting averages).  Try changing the Outcome to be SO or HR.  What impact does that change have on the estimates of K and eta?
+
+3.  One can also change the date that divides the two parts of data.  Try changing to an earlier data, say May 15, and see the effect of using a smaller amount of data in this prediction exercise. 

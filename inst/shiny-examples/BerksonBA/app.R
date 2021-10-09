@@ -80,7 +80,7 @@ ui <- fluidPage(
                           bootswatch = "superhero"),
   fluidRow(
     column(4, wellPanel(
-      h3("Demonstration of Selection-Distortion Effect"),
+      h3("Demo of Selection-Distortion Effect"),
       sliderInput("season", "Choose Season:",
                   min = 1960, max = 2020,
                   value = 2019),

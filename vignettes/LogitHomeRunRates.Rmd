@@ -1,0 +1,64 @@
+---
+title: "LogitHomeRunRates"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LogitHomeRunRates}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+```
+
+
+## Introduction
+
+There have been remarkable changes in home run hitting over the Statcast era from 2015 through 2021.  To hit a home run, a player needs to hit the ball hard (high launch velocity) with the right launch angle (typically between 20 and 40 degrees).  This app is helpful for comparing launch conditions of batted balls and for comparing home run rates between two Statcast seasons of interest.
+
+## Using the LogitHomeRunRates App
+
+To use the app, one first choosing two Statcast seasons to compare -- here we are choosing 2019 and 2021.
+
+You select the range of Launch Angle and the number of subgroups to use within that range.  Similarly, you choose the range of Launch Speed and the number of groups to use within that range.
+
+The launch angle/launch speed space is subdivided into rectangles.  The top graph displays the difference of logits of the in-play rates:
+
+logit(rate_season2) - logit(rate_season1)
+
+The bottom graph displays the difference of logits of home run rates:
+
+logit(home_run_rate_season2) - logit(home_run_rate_season1)
+
+Here we are choosing 4 groups for launch angle between 20 and 40 degrees and 3 groups for launch speed between 95 and 110 mph.
+
+By selecting the Z-Score tab, one can compare the analogous Z-scores for assessing significance of this logit differences.
+
+One can download all of the data used to create these graphs by selecting the Download Rates button.
+
+We see from this comparison ...
+
+- an increase (from 2019 to 2021) in balls hit with high velocity greater than 105 mph
+
+- a substantial decrease in home run rates (from 2019 to 2021) for balls hit in practically all regions of the launch condition space
+
+```{r tabsets, echo=FALSE}
+library(shiny)
+library(ShinyBaseball)
+shinyAppDir(
+  system.file("shiny-examples/LogitHomeRunRates", 
+              package = "ShinyBaseball"),
+  options = list(
+    width = "100%", height = 865
+  )
+)
+```
+
+## Things to Try
+
+- See how these difference in logit rates change as you change the number of groups of launch angle and launch speed.
+
+- Repeat the comparison using a different selection of two seasons.  By doing a number of comparisons, you can see general patterns of changes in home run hitting over the Statcast era.

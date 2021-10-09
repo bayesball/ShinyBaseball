@@ -1,0 +1,47 @@
+---
+title: "BerksonBA"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BerksonBA}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+```
+
+
+## Introduction
+
+This app illustrates Berkson's Paradox which might be better called the Selection-Distortion Effect.  Two variables may appear to have some type of association. But when we select a portion of the data, the selected data may have a different association pattern. In other words, the pattern of association is distorted by the selection mechanism.
+
+## Using the BerksonBA App
+
+In this app, we focus on data from the 2019 season, consider all hitters with at least 100 at-bats, and select hitters with at least a 0.200 batting average.  We see a scatterplot of the in-play rate (1 - SO / AB) and the batting average on balls on contact (BACON) (H / (AB - SO)).  We see a slight negative correlation of -0.37.
+
+Now change the minimum batting average to 0.270.  The app shows the selected points -- there is a stronger association pattern and the correlation value is now -0.76.  So we have changed the association pattern by selecting the better hitters.
+
+```{r tabsets, echo=FALSE}
+library(shiny)
+library(ShinyBaseball)
+library(broom)
+shinyAppDir(
+  system.file("shiny-examples/BerksonBA", 
+              package = "ShinyBaseball"),
+  options = list(
+    width = "100%", height = 550
+  )
+)
+```
+
+
+## Things to Try
+
+1.  Try to show this paradox by selecting data from a different season.  Do you see a similar phenomena when you select players with at least a minimum BA?
+
+2.  One can observe a similar paradox by selecting players on the basis of the number of at-bats (AB).  For a specific season, look at all hitters with say at least 50 at-bats.  Does the association pattern between In-Play Rate and BACON change when you select players with at least 400 at-bats?  Can you explain why the association pattern has or has not changed?
+

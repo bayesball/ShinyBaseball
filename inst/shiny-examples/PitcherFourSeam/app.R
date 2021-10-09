@@ -20,7 +20,8 @@ bin_FF_locations_P <- function(sc, plateX, plateZ){
   # compute number of FF pitches thrown to each side
   NT <- sc %>%
     group_by(stand) %>%
-    summarize(N = n())
+    summarize(N = n()) %>%
+    filter(stand %in% c("L", "R"))
 
   swing_situations <- c("hit_into_play",
                         "foul", "swinging_strike",
@@ -43,7 +44,7 @@ bin_FF_locations_P <- function(sc, plateX, plateZ){
                            miss_situations, 1, 0),
            InPlay = ifelse(type == "X", 1, 0),
            Hit = ifelse(events %in% hits, 1, 0),
-           HR = ifelse(events == "home_run", 1, 0)) -> sc
+           HR = ifelse(events %in% "home_run", 1, 0)) -> sc
 
   plate_x_lo <- plateX[1]
   plate_x_hi <- plateX[2]
@@ -92,11 +93,11 @@ bin_FF_locations_P <- function(sc, plateX, plateZ){
              .drop = FALSE) %>%
     summarize(NT = NT$N[NT$stand == "R"],
               N = n(),
-              Swing = sum(Swing, n.rm = TRUE),
-              Miss = sum(Miss, na.rm = TRUE),
-              InPlay = sum(InPlay, na.rm = TRUE),
-              Hit = sum(Hit, na.rm = TRUE),
-              HR = sum(HR, na.rm = TRUE),
+              Swing = sum(Swing),
+              Miss = sum(Miss),
+              InPlay = sum(InPlay),
+              Hit = sum(Hit),
+              HR = sum(HR),
               .groups = "drop")  ->  OUT_R
   # add bin midpoints
   OUT_R$PX <- sapply(OUT_R$px_c, myf)
@@ -110,11 +111,11 @@ bin_FF_locations_P <- function(sc, plateX, plateZ){
              .drop = FALSE) %>%
     summarize(NT = NT$N[NT$stand == "L"],
               N = n(),
-              Swing = sum(Swing, n.rm = TRUE),
-              Miss = sum(Miss, na.rm = TRUE),
-              InPlay = sum(InPlay, na.rm = TRUE),
-              Hit = sum(Hit, na.rm = TRUE),
-              HR = sum(HR, na.rm = TRUE),
+              Swing = sum(Swing),
+              Miss = sum(Miss),
+              InPlay = sum(InPlay),
+              Hit = sum(Hit),
+              HR = sum(HR),
               .groups = "drop") -> OUT_L
   # add bin midpoints
   OUT_L$PX <- sapply(OUT_L$px_c, myf)
@@ -145,6 +146,7 @@ plot_rates_P <- function(out,
                          subtitle = "",
                          digits  = 0,
                          label_size = 5){
+
   # inputs:
   # - data frame with four variables PX, PZ, stand, PCT
   # - title and subtitle of graph
@@ -168,8 +170,8 @@ plot_rates_P <- function(out,
                  size = label_size,
                  fill = "salmon",
                  color = "black")} else {
-                   p1 <- ggplot() +
-                     geom_label(data = filter(out, PX > 0),
+    p1 <- ggplot() +
+            geom_label(data = filter(out, PX > 0),
                                 aes(PX, PZ, label = PCT,
                                     fill = Sign),
                                 size = label_size,
@@ -183,7 +185,8 @@ plot_rates_P <- function(out,
   p1 +
     facet_wrap(~ stand, ncol = 2) +
     #    coord_fixed() +
-    xlim(-1, 1) + ylim(1.5, 3.5) +
+    xlim(-1.4, 1.4) +
+    ylim(1, 4.1) +
     labs(title = title, subtitle = subtitle) +
     theme(text=element_text(size=16)) +
     theme(plot.title = element_text(colour = "white",
@@ -225,10 +228,16 @@ ui <- fluidPage(
         "year",
         "Select Seasons",
         choices = c("2015", "2016", "2017",
-                    "2018", "2019", "2020"),
+                    "2018", "2019", "2020", "2021"),
         selected = c("2015", "2016", "2017",
-                     "2018", "2019", "2020"),
+                     "2018", "2019", "2020", "2021"),
         inline = TRUE),
+      sliderInput("pX", "Range of Plate X Variable:",
+                  min = -1.4, max = 1.4,
+                  value = c(-1.4, 1.4)),
+      sliderInput("pZ", "Range of Plate Z Variable:",
+                  min = 1.0, max = 4.1,
+                  value = c(1.0, 4.1)),
       radioButtons("type",
                    label = "Select Type of Rate:",
                    choices = c("location",
@@ -300,6 +309,14 @@ server <- function(input, output, session) {
               lwd=0.5, col=Color,
               linetype = "dashed")
   }
+  add_path <- function(Color = "blue", pX, pZ){
+    rect <- data.frame(
+      x = c(pX[1], pX[1], pX[2], pX[2], pX[1]),
+      y = c(pZ[1], pZ[2], pZ[2], pZ[1], pZ[1])
+    )
+    geom_path(aes(.data$x, .data$y), data=rect,
+              lwd=0.5, col=Color)
+  }
 
   output$plot1 <- renderPlot({
     pid <- get_id(input$name) %>%
@@ -307,20 +324,26 @@ server <- function(input, output, session) {
 
     if(length(pid) > 0){
 
-    df <- filter(FF_15_20, Season %in% as.numeric(input$year),
+    df <- filter(FF_15_20,
+                 Season %in% as.numeric(input$year),
                  pitcher == pid)
 
     if(nrow(df) > 0){
 
-    out <- bin_FF_locations_P(df, c(-0.85, 0.85, 0.425),
-                              c(1.6, 3.5, 0.475))
+    plateX <- c(input$pX[1], input$pX[2],
+                diff(input$pX) / 4)
+    plateZ <- c(input$pZ[1], input$pZ[2],
+                diff(input$pZ) / 4)
+
+    out <- bin_FF_locations_P(df, plateX, plateZ)
     if(input$type == "location"){
       out$PCT <- out$P1
       p <- plot_rates_P(out,  input$name,
             paste("Four-Seam Location Percentages", "\n",
                   paste(input$year, collapse = " ")),
             digits = 1) +
-        add_zone("black")
+        add_zone("black") +
+        add_path(pX = input$pX, pZ = input$pZ)
     }
     if(input$type == "swing"){
       out$PCT <- out$P2
@@ -328,7 +351,8 @@ server <- function(input, output, session) {
              paste("Four-Seam Swing Percentages", "\n",
                    paste(input$year, collapse = " ")),
             digits = 0) +
-        add_zone("black")
+        add_zone("black") +
+        add_path(pX = input$pX, pZ = input$pZ)
     }
     if(input$type == "miss"){
       out$PCT <- out$P3
@@ -336,16 +360,19 @@ server <- function(input, output, session) {
             paste("Four-Seam Miss Percentages", "\n",
             paste(input$year, collapse = " ")),
            digits = 0) +
-        add_zone("black")
+        add_zone("black") +
+        add_path(pX = input$pX, pZ = input$pZ)
     }
     if(input$type == "hit"){
       out$PCT <- out$P4
+
       p <- plot_rates_P(out, input$name,
           paste("Four-Seam Hit Avgs", "\n",
           paste(input$year, collapse = " ")),
                       digits = 3,
                       label_size = 4) +
-        add_zone("black")
+        add_zone("black") +
+        add_path(pX = input$pX, pZ = input$pZ)
     }
     if(input$type == "HR"){
       out$PCT <- out$P5
@@ -353,7 +380,8 @@ server <- function(input, output, session) {
         paste("Four-Seam HR Percentages", "\n",
         paste(input$year, collapse = " ")),
                       digits = 1) +
-        add_zone("black")
+        add_zone("black") +
+        add_path(pX = input$pX, pZ = input$pZ)
     }
     p
     }}
@@ -365,16 +393,22 @@ server <- function(input, output, session) {
 
     if(length(pid) > 0){
 
-      df <- filter(FF_15_20, Season %in% as.numeric(input$year),
+      df <- filter(FF_15_20,
+                   Season %in% as.numeric(input$year),
                    pitcher == pid)
 
       if(nrow(df) > 0){
 
+        plateX <- c(input$pX[1], input$pX[2],
+                    diff(input$pX) / 4)
+        plateZ <- c(input$pZ[1], input$pZ[2],
+                    diff(input$pZ) / 4)
+
         dfnew <- filter(FF_15_20, Season %in%
                           as.numeric(input$year))
         out_all <- bin_FF_locations_P(dfnew,
-                                      c(-0.85, 0.85, 0.425),
-                                      c(1.6, 3.5, 0.475))
+                                      plateX,
+                                      plateZ)
 
         if(input$type == "location"){
           out_all$PCT <- out_all$P1
@@ -382,7 +416,8 @@ server <- function(input, output, session) {
                             paste("Four-Seam Location Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "swing"){
           out_all$PCT <- out_all$P2
@@ -390,7 +425,8 @@ server <- function(input, output, session) {
                             paste("Four-Seam Swing Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 0) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "miss"){
           out_all$PCT <- out_all$P3
@@ -398,7 +434,8 @@ server <- function(input, output, session) {
                             paste("Four-Seam Miss Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 0) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "hit"){
           out_all$PCT <- out_all$P4
@@ -407,7 +444,8 @@ server <- function(input, output, session) {
                                   paste(input$year, collapse = " ")),
                             digits = 3,
                             label_size = 4) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "HR"){
           out_all$PCT <- out_all$P5
@@ -415,7 +453,8 @@ server <- function(input, output, session) {
                             paste("Four-Seam HR Percentages", "\n",
                                   paste(input$year, collapse = " ")),
                             digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         p
       }}
@@ -427,28 +466,35 @@ server <- function(input, output, session) {
 
     if(length(pid) > 0){
 
-      df <- filter(FF_15_20, Season %in% as.numeric(input$year),
+      df <- filter(FF_15_20,
+                   Season %in% as.numeric(input$year),
                    pitcher == pid)
 
       if(nrow(df) > 0){
+        plateX <- c(input$pX[1], input$pX[2],
+                     diff(input$pX) / 4)
+        plateZ <- c(input$pZ[1], input$pZ[2],
+                    diff(input$pZ) / 4)
 
         out <- bin_FF_locations_P(df,
-                          c(-0.85, 0.85, 0.425),
-                          c(1.6, 3.5, 0.475))
+                          plateX,
+                          plateZ)
 
-        dfnew <- filter(FF_15_20, Season %in%
+        dfnew <- filter(FF_15_20,
+                         Season %in%
                           as.numeric(input$year))
         out_all <- bin_FF_locations_P(dfnew,
-                          c(-0.85, 0.85, 0.425),
-                         c(1.6, 3.5, 0.475))
+                          plateX,
+                          plateZ)
 
         if(input$type == "location"){
           out$PCT <- out$P1 - out_all$P1
           p <- plot_rates_P(out,  input$name,
                           paste("Residuals of Location Percentages", "\n",
-                                paste(input$year, collapse = " ")),
+                            paste(input$year, collapse = " ")),
                           digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "swing"){
           out$PCT <- out$P2 - out_all$P2
@@ -456,7 +502,8 @@ server <- function(input, output, session) {
                           paste("Residuals of Swing Percentages", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 0) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "miss"){
           out$PCT <- out$P3 - out_all$P3
@@ -464,7 +511,8 @@ server <- function(input, output, session) {
                           paste("Residuals of Miss Percentages", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 0) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "hit"){
           out$PCT <- out$P4 - out_all$P4
@@ -473,7 +521,8 @@ server <- function(input, output, session) {
                                 paste(input$year, collapse = " ")),
                           digits = 3,
                           label_size = 4) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "HR"){
           out$PCT <- out$P5 - out_all$P5
@@ -481,7 +530,8 @@ server <- function(input, output, session) {
                           paste("Residuals of HR Percentages", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         p
       }}
@@ -498,15 +548,20 @@ server <- function(input, output, session) {
 
       if(nrow(df) > 0){
 
+        plateX <- c(input$pX[1], input$pX[2],
+                    diff(input$pX) / 4)
+        plateZ <- c(input$pZ[1], input$pZ[2],
+                    diff(input$pZ) / 4)
+
         out <- bin_FF_locations_P(df,
-                                c(-0.85, 0.85, 0.425),
-                                c(1.6, 3.5, 0.475))
+                                plateX,
+                                plateZ)
 
         dfnew <- filter(FF_15_20, Season %in%
                           as.numeric(input$year))
         out_all <- bin_FF_locations_P(dfnew,
-                                c(-0.85, 0.85, 0.425),
-                                c(1.6, 3.5, 0.475))
+                                plateX,
+                                plateZ)
 
         if(input$type == "location"){
           out$PCT <- z_score2(out$N, out$NT,
@@ -515,7 +570,8 @@ server <- function(input, output, session) {
                           paste("Z-Scores of Location Percentages", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "swing"){
           out$PCT <- z_score2(out$Swing, out$N,
@@ -524,7 +580,8 @@ server <- function(input, output, session) {
                           paste("Z-Scores of Swing Percentages", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "miss"){
           out$PCT <- z_score2(out$Miss, out$Swing,
@@ -533,7 +590,8 @@ server <- function(input, output, session) {
                           paste("Z-Scores of Miss Percentages", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "hit"){
           out$PCT <- z_score2(out$Hit, out$InPlay,
@@ -542,7 +600,8 @@ server <- function(input, output, session) {
                           paste("Z-Scores of Hit Avgs", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         if(input$type == "HR"){
           out$PCT <- z_score2(out$HR, out$InPlay,
@@ -551,7 +610,8 @@ server <- function(input, output, session) {
                           paste("Z-Scores of HR Percentages", "\n",
                                 paste(input$year, collapse = " ")),
                           digits = 1) +
-            add_zone("black")
+            add_zone("black") +
+            add_path(pX = input$pX, pZ = input$pZ)
         }
         p
       }}
@@ -561,11 +621,25 @@ server <- function(input, output, session) {
     filename = "pitcher_rates_output.csv",
     content = function(file) {
       pid <- get_id(input$name)
-        df <- filter(FF_15_20, Season %in% as.numeric(input$year),
+        df <- filter(FF_15_20,
+                     Season %in% as.numeric(input$year),
                      pitcher == pid$key_mlbam)
-        out <- bin_FF_locations_P(df, c(-0.85, 0.85, 0.425),
-                                    c(1.6, 3.5, 0.475))
+
+        plateX <- c(input$pX[1], input$pX[2],
+                    diff(input$pX) / 4)
+        plateZ <- c(input$pZ[1], input$pZ[2],
+                    diff(input$pZ) / 4)
+
+        out <- bin_FF_locations_P(df,
+                                  plateX,
+                                  plateZ)
         out$Name <- pid$Name
+        Year <- NULL
+        for(j in 1:length(input$year)){
+          Year <- paste(Year, input$year[j],
+                        sep = " ")
+        }
+        out$Season <- Year
         write.csv(out, file, row.names = FALSE)
     }
   )
