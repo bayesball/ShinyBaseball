@@ -1,0 +1,75 @@
+---
+title: "BatterFourSeam"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BatterFourSeam}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+```
+
+
+## Introduction
+
+This app illustrates how pitch measures for a particular batter vary across the strike zone.  One selects a batter from the Statcast era (seasons 2015 through 2021) and a particular rate of interest. A graph shows how the rates of four-seam fastballs vary across subregions about the zone for right-handed and left-handed pitchers.
+
+## Using the BatterFourSeam App
+
+One starts by typing the name of a particular batter, here Mike Trout, who faced a large number of four-seam fastballs.  One also selects the Statcast seasons of interest.  In the app below, I have selected all Statcast seasons.
+
+Next, one chooses the range of values of the Plate X (horizontal) and Plate Z (vertical) variables.  One will consider 4 x 4 = 16 subregions defined by these range of Plate X and Plate Z variables.  Below I consider values of Plate X between -1.4 and 1.4 and values of Plate Z between 1 and 4.1.
+
+Next, one decides on the type of rate -- there are five rate types.
+
+- **location** is the percentage of all four-seam fastballs that fall in each subregion
+
+- **swing** is the percentage of all four-seamers that are swung at in each region
+
+- **miss** is the percentage of all swung pitches that are missed
+
+- **hit** gives the percentage of all balls in play that are hits
+
+- **HR** gives the percentage of all balls in play that are home runs
+
+Once a particular rate is chosen, then different measures are graphed across the zone.
+
+- The **Rates** tab displays a graph that shows the percentage of four-seamers in each of the 16 subregions.  If **hit** is selected, the graph displays batting averages on balls in play for each subregion.
+
+- To help understand if the rates of the selected hitter are high or low, the **Overall** tab gives the same rates for all hitters in the selected Statcast seasons.
+
+- The **Residuals** tab displays the Batter Rate MINUS the Overall Rate
+
+- The **Z-Score** tab displays the standardized residuals -- values of Z that are larger than 2 in absolute value represent meaningful differences between the batter and overall rates.
+
+
+```{r tabsets, echo=FALSE}
+library(shiny)
+library(ShinyBaseball)
+shinyAppDir(
+  system.file("shiny-examples/BatterFourSeam", 
+              package = "ShinyBaseball"),
+  options = list(
+    width = "100%", height = 780
+  )
+)
+```
+
+
+## Things to Try
+
+1.  Select a hitter who is know to face a large number of four-seam fastballs in this period.  For example, Freddie Freeman would be a good choice.
+
+2.  Enter the name of your hitter and the Statcast seasons of interest.  Some of the patterns in the rates may be more obvious if you select all of the Statcast seasons from 2015 through 2021.
+
+3.  Keep the Plate X and Plate Z variables at the default ranges so you can see the pattern of rates both inside and outside of the zone.
+
+4. For each of the rate types (location, swing, miss, hit, HR), describe the pattern of rates that you see in the graphs.  Compare the rates high and low in the zone, and compare the rate values inside and outside.  The graphs are from the catcher's perspective, so "inside" would be to the left for a right-handed hitter and "outside" would be on the right.
+
+5.  By looking at the residuals and associated Z-scores, how does your batter differ from the general population of batter who faced four-seamers?  Describe these differences for any rates that you think are meaningful.
+

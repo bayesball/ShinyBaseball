@@ -31,7 +31,7 @@ Next, one decides on the type of rate -- there are five rate types.
 
 - **swing** is the percentage of all four-seamers that are swung at in each region
 
-- **miss** is the percentage of all swung pitchers that are missed
+- **miss** is the percentage of all swung pitches that are missed
 
 - **hit** gives the percentage of all balls in play that are hits
 
