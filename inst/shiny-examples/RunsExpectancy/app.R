@@ -9,7 +9,6 @@ RE$Bases <- gsub("[“”]", "", RE$Bases)
 
 make_plot <- function(RE, season, type){
   R <- filter(RE, Season == season)
-  R$Bases <- as.character(R$Bases)
 
   R$Bases <- factor(R$Bases,
                     levels = c("000", "100", "020", "003",
