@@ -4,7 +4,6 @@ library(ggplot2)
 library(dplyr)
 library(readr)
 library(lubridate)
-library(CalledStrike)
 
 # turn off warnings
 options(warn=-1)
@@ -63,7 +62,11 @@ pct_plot <- function(S, title = "",
     geom_hline(yintercept = seq(60, 110, by = 10)) +
     geom_vline(xintercept = seq(-10, 50, by = 10)) +
     scale_color_manual(values = c("black", "red")) +
-    theme(legend.position = "none")
+    theme(legend.position = "none") +
+    theme(text = element_text(size = 18),
+          plot.title = element_text(colour = "blue",
+                size = 18,
+                hjust = 0.5, vjust = 0.8, angle = 0))
 
   if(type == "H"){
     p7 <- ggpart +
@@ -134,7 +137,11 @@ z_plot <- function(S, title = ""){
     geom_vline(xintercept = seq(-10, 50, by = 10),
                linetype = "dashed") +
     scale_color_manual(values = c("red", "blue")) +
-    theme(legend.position = "none")
+    theme(legend.position = "none") +
+    theme(text = element_text(size = 18),
+          plot.title = element_text(colour = "blue",
+                    size = 18,
+            hjust = 0.5, vjust = 0.8, angle = 0))
 }
 
 # plots change in percentages in Hit rates
@@ -165,7 +172,11 @@ two_p_plot <- function(B1, B2, title = "",
     geom_vline(xintercept = seq(-10, 50, by = 10),
                linetype = "dashed") +
     scale_color_manual(values = c("red", "blue")) +
-    theme(legend.position = "none")
+    theme(legend.position = "none") +
+    theme(text = element_text(size = 18),
+          plot.title = element_text(colour = "blue",
+                        size = 18,
+               hjust = 0.5, vjust = 0.8, angle = 0))
 }
 
 data_work <- function(){
