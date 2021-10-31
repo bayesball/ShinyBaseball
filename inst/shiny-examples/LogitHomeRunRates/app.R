@@ -19,10 +19,13 @@ data_work <- function(){
 
   names(sc_old)[2] <- "Game_Date"
 
+  hits <- c("single", "double", "triple",
+            "home_run")
   sc_2021 %>%
-    mutate(HR = ifelse(events == "home_run", 1, 0)) %>%
+    mutate(HR = ifelse(events == "home_run", 1, 0),
+           H = ifelse(events %in% hits, 1, 0)) %>%
     select(game_year, Game_Date, launch_angle,
-           launch_speed, HR) -> sc_2021
+           launch_speed, events, HR, H) -> sc_2021
 
   sc <- rbind(sc_old, sc_2021)
 
