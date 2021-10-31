@@ -59,8 +59,10 @@ pct_plot <- function(S, title = "",
     centertitle() +
     xlab("Launch Angle (degrees)") +
     ylab("Exit Velocity (mph)") +
-    geom_hline(yintercept = seq(60, 110, by = 10)) +
-    geom_vline(xintercept = seq(-10, 50, by = 10)) +
+    geom_hline(yintercept = seq(60, 110, by = 10),
+               linetype = "dashed") +
+    geom_vline(xintercept = seq(-10, 50, by = 10),
+               linetype = "dashed") +
     scale_color_manual(values = c("black", "red")) +
     theme(legend.position = "none") +
     theme(text = element_text(size = 18),
@@ -243,19 +245,19 @@ ui <- fluidPage(
            tabsetPanel(type = "tabs",
                 tabPanel("Pct Season 1",
                      plotOutput("plot1",
-                        height = "400px")
+                        height = "450px")
                         ),
                 tabPanel("Pct Season 2",
                      plotOutput("plot2",
-                        height = "400px")
+                        height = "450px")
                         ),
                 tabPanel("Difference in Pcts",
                      plotOutput("plot3",
-                        height = "400px")
+                        height = "450px")
                         ),
                 tabPanel("Z-Score",
                      plotOutput("plot4",
-                        height = "400px")
+                        height = "450px")
                         )
                 )
       )
