@@ -225,7 +225,8 @@ ui <- fluidPage(
                    label = "Round Percentages?",
                    choices = c("Yes", "No"),
                    selected = "Yes",
-                   inline = TRUE)
+                   inline = TRUE),
+      downloadButton("downloadData", "Download Rates")
     )),
     column(8,
            tabsetPanel(type = "tabs",
@@ -322,6 +323,19 @@ server <- function(input, output, session) {
     z_plot(B, the_title)
   }, res = 96)
 
+  output$downloadData <- downloadHandler(
+    filename = "rates_output.csv",
+    content = function(file) {
+      out1 <- binning_hits(filter(sc,
+                                  Season == input$year1))
+      out2 <- binning_hits(filter(sc,
+                                  Season == input$year2))
+      out12 <- inner_join(out1, out2,
+                  by = c("ctheta" = "ctheta",
+                        "cv0"="cv0"))
+      write.csv(out12[, 1:18], file, row.names = FALSE)
+    }
+  )
 }
 
 shinyApp(ui = ui, server = server)
