@@ -55,8 +55,6 @@ pct_plot <- function(S, title = "",
 
   ggpart <- ggplot(S, aes(theta, v0)) +
     xlim(-10, 50) + ylim(60, 110) +
-    increasefont() +
-    centertitle() +
     xlab("Launch Angle (degrees)") +
     ylab("Exit Velocity (mph)") +
     geom_hline(yintercept = seq(60, 110, by = 10),
@@ -129,9 +127,7 @@ z_plot <- function(S, title = ""){
   ggplot(S, aes(theta, v0, label=Z, color = sign)) +
     geom_text(size=6) +
     xlim(-10, 50) + ylim(60, 110) +
-    increasefont() +
     ggtitle(paste("Z Stat", title)) +
-    centertitle() +
     xlab("Launch Angle (degrees)") +
     ylab("Exit Velocity (mph)") +
     geom_hline(yintercept = seq(60, 110, by = 10),
@@ -163,10 +159,8 @@ two_p_plot <- function(B1, B2, title = "",
   ggplot(S, aes(theta, v0, label=change, color = sign)) +
     geom_text(size=6) +
     xlim(-10, 50) + ylim(60, 110) +
-    increasefont() +
     ggtitle(paste("Change in", type,
                   "Percentage", title)) +
-    centertitle() +
     xlab("Launch Angle (degrees)") +
     ylab("Exit Velocity (mph)") +
     geom_hline(yintercept = seq(60, 110, by = 10),
