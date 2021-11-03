@@ -30,9 +30,15 @@ binning_hits <- function(scip,
               HR = sum(HR),
               H = sum(H),
               H_noHR = H - HR,
+              D = sum(events == "double"),
+              S = sum(events == "single"),
+              Tr = sum(events == "triple"),
               PH = round(100 * H / N, digits),
               PHR = round(100 * HR / N, digits),
               PH_noHR = round(100 * H_noHR / N, digits),
+              PD = round(100 * D / N, digits),
+              PS = round(100 * S / N, digits),
+              PT = round(100 * Tr / N, digits),
               .groups = "drop") -> S
 
   convert_string <- function(y){
@@ -89,6 +95,27 @@ pct_plot <- function(S, title = "",
                 size = 6, nudge_y = 0) +
       ggtitle(paste("Hit (not HR) Percentages", title))
   }
+  if(type == "D"){
+    p7 <- ggpart +
+      geom_text(aes(label = PD,
+                    color = PD >= 50),
+                size = 6, nudge_y = 0) +
+      ggtitle(paste("Double Percentages", title))
+  }
+  if(type == "S"){
+    p7 <- ggpart +
+      geom_text(aes(label = PS,
+                    color = PS >= 50),
+                size = 6, nudge_y = 0) +
+      ggtitle(paste("Single Percentages", title))
+  }
+  if(type == "Tr"){
+    p7 <- ggpart +
+      geom_text(aes(label = PT,
+                    color = PT >= 50),
+                size = 6, nudge_y = 0) +
+      ggtitle(paste("Triple Percentages", title))
+  }
   p7
 }
 
@@ -112,6 +139,27 @@ compute_z_stat <- function(B1, B2, type){
     p1 <- (B1$H - B1$HR) / B1$N
     p2 <- (B2$H - B2$HR) / B2$N
     p <- (B1$H + B2$H - B1$HR - B2$HR) / (B1$N + B2$N)
+    N1 <- B1$N
+    N2 <- B2$N
+  }
+  if(type == "2B"){
+    p1 <- B1$D / B1$N
+    p2 <- B2$D / B2$N
+    p <- (B1$D + B2$D) / (B1$N + B2$N)
+    N1 <- B1$N
+    N2 <- B2$N
+  }
+  if(type == "1B"){
+    p1 <- B1$S / B1$N
+    p2 <- B2$S / B2$N
+    p <- (B1$S + B2$S) / (B1$N + B2$N)
+    N1 <- B1$N
+    N2 <- B2$N
+  }
+  if(type == "3B"){
+    p1 <- B1$Tr / B1$N
+    p2 <- B2$Tr / B2$N
+    p <- (B1$Tr + B2$Tr) / (B1$N + B2$N)
     N1 <- B1$N
     N2 <- B2$N
   }
@@ -154,6 +202,15 @@ two_p_plot <- function(B1, B2, title = "",
   }
   if(type == "H_noHR"){
     S$change <- round(B2$PH_noHR - B1$PH_noHR, 2)
+  }
+  if(type == "D"){
+    S$change <- round(B2$PD - B1$PD, 2)
+  }
+  if(type == "S"){
+    S$change <- round(B2$PS - B1$PS, 2)
+  }
+  if(type == "Tr"){
+    S$change <- round(B2$PT - B1$PT, 2)
   }
   S$sign <- S$change > 0
   ggplot(S, aes(theta, v0, label=change, color = sign)) +
@@ -225,7 +282,8 @@ ui <- fluidPage(
                    inline = TRUE),
       radioButtons("type",
                    label = "Select In-Play Event:",
-                   choices = c("H", "HR", "H no HR"),
+                   choices = c("H", "1B", "2B", "3B",
+                               "HR", "H no HR"),
                    selected = "H",
                    inline = TRUE),
       radioButtons("round",
@@ -277,6 +335,18 @@ server <- function(input, output, session) {
       the_plot <- pct_plot(out1, title = input$year1,
                type = "H_noHR")
     }
+    if(input$type == "2B"){
+      the_plot <- pct_plot(out1, title = input$year1,
+                           type = "D")
+    }
+    if(input$type == "1B"){
+      the_plot <- pct_plot(out1, title = input$year1,
+                           type = "S")
+    }
+    if(input$type == "3B"){
+      the_plot <- pct_plot(out1, title = input$year1,
+                           type = "Tr")
+    }
     the_plot
   }, res = 96)
 
@@ -296,6 +366,18 @@ server <- function(input, output, session) {
     if(input$type == "H no HR"){
       the_plot <- pct_plot(out2, title = input$year2,
                            type = "H_noHR")
+    }
+    if(input$type == "2B"){
+      the_plot <- pct_plot(out2, title = input$year2,
+                           type = "D")
+    }
+    if(input$type == "1B"){
+      the_plot <- pct_plot(out2, title = input$year2,
+                           type = "S")
+    }
+    if(input$type == "3B"){
+      the_plot <- pct_plot(out2, title = input$year2,
+                           type = "Tr")
     }
     the_plot
   }, res = 96)
@@ -318,6 +400,18 @@ server <- function(input, output, session) {
       the_plot <- two_p_plot(out1, out2, the_title,
                            type = "H_noHR")
     }
+    if(input$type == "2B"){
+      the_plot <- two_p_plot(out1, out2, the_title,
+                             type = "D")
+    }
+    if(input$type == "3B"){
+      the_plot <- two_p_plot(out1, out2, the_title,
+                             type = "Tr")
+    }
+    if(input$type == "1B"){
+      the_plot <- two_p_plot(out1, out2, the_title,
+                             type = "S")
+    }
     the_plot
   }, res = 96)
 
@@ -334,13 +428,13 @@ server <- function(input, output, session) {
     filename = "rates_output.csv",
     content = function(file) {
       out1 <- binning_hits(filter(sc,
-                                  Season == input$year1))
+                            Season == input$year1))
       out2 <- binning_hits(filter(sc,
-                                  Season == input$year2))
+                            Season == input$year2))
       out12 <- inner_join(out1, out2,
                   by = c("ctheta" = "ctheta",
                         "cv0"="cv0"))
-      write.csv(out12[, 1:18], file, row.names = FALSE)
+      write.csv(out12[, 1:30], file, row.names = FALSE)
     }
   )
 }
