@@ -24,6 +24,8 @@
   \item{hc_x}{landing location of ball in play - x}
   \item{hc_y}{landing location of ball in play - y}
   \item{stand}{side of batter}
+  \item{if_fielding_alignment}{infield positioning of defense}
+  \item{of_fielding_alignment}{outfield positioning of defense}
   }
 }
 \source{
