@@ -11,7 +11,7 @@
   sc2019_ip
 }
 \format{
-   A data frame with 125,751 observations on the following 11 variables.
+   A data frame with 125,751 observations on the following 13 variables.
   \describe{
   \item{player_name}{name of hitter}
   \item{plate_x}{horizontal location of pitch}

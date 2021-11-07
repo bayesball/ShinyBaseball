@@ -116,12 +116,11 @@ spray_hit_plot <- function(sc_ip, LA, LS,
     ylim(0, 1)
 }
 
-
 # shiny app
 ui <- fluidPage(
   theme = bslib::bs_theme(version = 4,
                           bootswatch = "superhero"),
-  h3("In-Play Hit Rates\nOver Launch Conditions and Fielding"),
+  h3("In-Play Hit Rates Over Launch Conditions and Fielding"),
   fluidRow(
     column(4, wellPanel(
       sliderInput("LA", "Range of Launch Angle:",
