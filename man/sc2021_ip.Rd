@@ -11,8 +11,9 @@
   sc2019_ip
 }
 \format{
-   A data frame with 121,108 observations on the following 12 variables.
+   A data frame with 121,108 observations on the following 13 variables.
   \describe{
+  \item{batter}{Statcast code of batter}
   \item{plate_x}{horizontal location of pitch}
   \item{plate_z}{vertical location of pitch}
   \item{H}{logical variable that is TRUE for a hit}
