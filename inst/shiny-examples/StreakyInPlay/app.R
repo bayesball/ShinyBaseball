@@ -206,7 +206,42 @@ ui <- fluidPage(
                        height = "500px")
               ),
               tabPanel("Description",
-                       p("my description")
+                       hr(),
+                       p("This app displays moving averages
+                         of in-play batting data for any
+                         2021 batter of interest."),
+                       p("One inputs the batter player,
+                         the measure (either BA
+                         or wOBA) and the width
+                         for the moving average.  These measures
+                         are estimated values of BA and wOBA
+                         based on the
+                         launch angle and exit velocity
+                         measurements."),
+                       p("The Observed tab displays a graph of
+                         the moving average against the in-play
+                         number.  The shaded region shows the
+                         deviations of the moving average from
+                         the overall average.  The BLUE statistic
+                         is the area of the shaded region and
+                         measures the streakiness of the
+                         hitting data."),
+                       p("The Simulation tab shows results of
+                         a simulation to assess the significance
+                         of the observed streakiness.  One
+                         randomly permutes the measure values,
+                         finds all the moving averages, and
+                         computes the BLUE statistic.
+                         One repeats this exercise 500 times and
+                         collects the values of BLUE.  A
+                         histogram of the BLUE values is shown.
+                         and the observed BLUE is shown as a
+                         vertical line.  The tail probability is
+                         the probability the simulated BLUE is
+                         at least as large as the observed value.
+                         A small tail probablity indicates there
+                         is more streakiness in the data than
+                         one would anticipate by chance.")
               )
            )
           )
