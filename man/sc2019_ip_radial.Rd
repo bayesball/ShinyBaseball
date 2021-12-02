@@ -1,5 +1,5 @@
-\name{sc_2019_ip_radial}
-\alias{sc_2019_ip_radial}
+\name{sc2019_ip_radial}
+\alias{sc2019_ip_radial}
 
 \title{
   2019 Statcast In-Play Data for Radial Chart
