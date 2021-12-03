@@ -1,5 +1,7 @@
 # ShinyBaseball
 
+![GitHub Logo](/images/brushingzone.png)
+
 A collection of functions to illustrate the use of Shiny apps in baseball research.
 
 A general overview of this package can be found at
@@ -16,18 +18,5 @@ library(remotes)
 
 install_github("bayesball/ShinyBaseball")
 
-Here are the main two Shiny functions:
-
-BrushingZone()
-
-Shiny app to illustrate brushing to explore hit, home run, and launch speed measurements over the zone (2019 data)
-
-![GitHub Logo](/images/brushingzone.png)
-
-PitchOutcome()
-
-Shiny app to illustrate pitch outcomes using 2019 Statcast data for pitchers
-
-![GitHub Logo](/images/pitchoutcome.png)
 
 
