@@ -1,7 +1,7 @@
 Package: ShinyBaseball
 Type: Package
 Title: Shiny Baseball Applications
-Version: 0.5.3
+Version: 0.5.5
 Author: Jim Albert
 VignetteBuilder: knitr
 Suggests: knitr, rmarkdown
