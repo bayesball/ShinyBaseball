@@ -4,10 +4,15 @@ library(dplyr)
 library(readr)
 library(stringr)
 
+# read in data from Github site
 sc_ip <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/scip_ip_2021c.csv")
 chadwick <- read.table("https://raw.githubusercontent.com/bayesball/ShinyBaseball/main/data/chadwick.txt",
                        header = TRUE)
 
+# remove a few cases with missing data
+sc_ip <- sc_ip[complete.cases(sc_ip), ]
+
+# collect a list of batters with at least 200 BIP
 sc_ip %>%
   group_by(batter) %>%
   summarize(N = n()) %>%
@@ -16,6 +21,12 @@ sc_ip %>%
   mutate(Name = paste(name_first, name_last)) %>%
   arrange(name_last) -> S1
 
+# making sure chadwick only contains the
+# batters with at least 200 BIP
+chadwick <- inner_join(chadwick, S1[, 1:2],
+                       by = c("key_mlbam" ="batter"))
+
+# function extracts the Statcast id from the player name
 get_id <- function(st){
   names <- str_to_lower(unlist(str_split(str_squish(st), " ")))
   if(length(names) == 3){
@@ -31,6 +42,7 @@ get_id <- function(st){
     select(key_mlbam, Name)
 }
 
+# function to plot the field locations of balls in play
 plot_locations <- function(new_data, input){
   new_data$Hit <- ifelse(new_data$events %in%
                          c("single", "double",
@@ -63,6 +75,7 @@ plot_locations <- function(new_data, input){
       color = "blue", lwd = 1) +
     scale_color_manual(values = c("orange", "brown"))
 }
+# function to plot the zone locations of the BIP pitches
 plot_zone <- function(new_data, input){
   add_zone <- function (Color = "red"){
     topKzone <- 3.5
@@ -97,6 +110,7 @@ plot_zone <- function(new_data, input){
                 hjust = 0.5, vjust = 0.8, angle = 0)) +
     scale_color_manual(values = c("orange", "brown"))
 }
+# constructs scatterplot of the launch variables
 plot_launch_variables <- function(new_data, input){
   ggplot() +
     geom_point(data = new_data,
@@ -116,6 +130,7 @@ plot_launch_variables <- function(new_data, input){
                           size = 18,
               hjust = 0.5, vjust = 0.8, angle = 0))
 }
+# displays average stats for BIP in the selected region
 display_stats <- function(sc1){
   Measure <- c("BIP", "H", "H Rate", "Mean LA", "Mean LS",
                "xBA")
@@ -138,12 +153,14 @@ ui <- fluidPage(
   tags$style(HTML("#big-heading{color: white;}")),
   column(6,
          selectInput("player_name",
-                     "Select 2021 Batter (at least 200 BIP):",
+                     "Select 2021 Batter (at Least 200 BIP):",
              S1$Name,
              selected = "Bryce Harper"),
-         h4("Brush any plot to see associations."),
+         h4("Brush any plot to see relationships."),
          plotOutput("plot3",
-            brush = "plot_brush",
+            brush =
+            brushOpts("plot_brush",
+                      fill = "auto"),
             height = '330px'),
          tableOutput("data")
   ),
@@ -151,10 +168,12 @@ ui <- fluidPage(
          plotOutput("plot2",
               brush =
               brushOpts("plot_brush",
-                        fill = "#0000ff"),
+                      fill = "auto"),
               height = '330px'),
          plotOutput("plot1",
-              brush = "plot_brush",
+              brush =
+              brushOpts("plot_brush",
+                      fill = "auto"),
               height = '330px')
          )
 )
