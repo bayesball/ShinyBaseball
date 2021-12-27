@@ -11,6 +11,14 @@ options(warn=-1)
 #scip <- read_csv("sc2021_ip3.csv")
 #chadwick <- read_csv("chadwick.csv")
 
+sc2021_ip3 %>%
+  group_by(batter) %>%
+  summarize(N = n()) %>%
+  filter(N >= 200)  %>%
+  inner_join(chadwick, c("batter" = "key_mlbam")) %>%
+  mutate(Name = paste(name_first, name_last)) %>%
+  arrange(name_last) -> S1
+
 ##############################################
 setup_data <- function(sc, pid){
   sc %>%
@@ -184,8 +192,12 @@ ui <- fluidPage(
   h2("Streakiness in In-Play Batting Performance"),
   fluidRow(
     column(4, wellPanel(
-      textInput("player_name", "2021 Batter Name:",
-                value = "Bryce Harper"),
+ #     textInput("player_name", "2021 Batter Name:",
+ #               value = "Bryce Harper"),
+      selectInput("player_name",
+                  "Select 2021 Batter (at Least 200 BIP):",
+                  S1$Name,
+                  selected = "Bryce Harper"),
       radioButtons("type", "Select Measure:",
                    c("BA", "WOBA"),
                    "BA", inline = TRUE),
@@ -252,21 +264,27 @@ server <- function(input, output, session) {
 
   output$plot1 <- renderPlot({
     id_info <- get_id(input$player_name)
-    d <- setup_data(sc2021_ip3,
-                    id_info$key_mlbam)
+    # check for duplicate names
+    inner_join(id_info, sc2021_ip3,
+               by = c("key_mlbam" = "batter")) %>%
+      summarize(ID = first(key_mlbam)) %>% pull() -> ID
+    d <- setup_data(sc2021_ip3, ID)
     moving_average_plot(d,
                         width = input$width,
-                        name = id_info$Name,
+                        name = input$player_name,
                         type = input$type)$plot1
   }, res = 96)
 
   output$plot2 <- renderPlot({
     id_info <- get_id(input$player_name)
-    d <- setup_data(sc2021_ip3,
-                    id_info$key_mlbam)
+    # check for duplicate names
+    inner_join(id_info, sc2021_ip3,
+               by = c("key_mlbam" = "batter")) %>%
+      summarize(ID = first(key_mlbam)) %>% pull() -> ID
+    d <- setup_data(sc2021_ip3, ID)
     moving_average_sim(d,
                        width = input$width,
-                       name = id_info$Name,
+                       name = input$player_name,
                        type = input$type)
   }, res = 96)
 
@@ -274,11 +292,14 @@ server <- function(input, output, session) {
     filename = "streak_output.csv",
     content = function(file) {
       id_info <- get_id(input$player_name)
-      d <- setup_data(sc2021_ip3,
-                      id_info$key_mlbam)
+      # check for duplicate names
+      inner_join(id_info, sc2021_ip3,
+                 by = c("key_mlbam" = "batter")) %>%
+        summarize(ID = first(key_mlbam)) %>% pull() -> ID
+      d <- setup_data(sc2021_ip3, ID)
       out <- moving_average_plot(d,
                           width = input$width,
-                          name = id_info$Name,
+                          input$player_name,
                           type = input$type)
       write.csv(out$S, file, row.names = FALSE)
     }
