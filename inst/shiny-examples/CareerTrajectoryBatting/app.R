@@ -88,26 +88,32 @@ compare_plot <- function(playerid_1, playerid_2,
   # define outcome depending on input
   if(measure == "AVG"){
     S$Outcome <- S$AVG
+    S$Weight <- S$AB
     YLAB <- "AVG"
   }
   if(measure == "HR Rate"){
     S$Outcome <- S$HR_Rate
+    S$Weight <- S$wOBA_den
     YLAB = "Home Run Rate"
   }
   if(measure == "wOBA"){
     S$Outcome <- S$wOBA
+    S$Weight <- S$wOBA_den
     YLAB = "wOBA"
   }
   if(measure == "RC"){
     S$Outcome <- S$RC
+    S$Weight <- S$wOBA_den
     YLAB = "RC"
   }
   if(measure == "SO Rate"){
     S$Outcome <- S$SO_Rate
+    S$Weight <- S$wOBA_den
     YLAB = "SO Rate"
   }
   if(measure == "BB Rate"){
     S$Outcome <- S$BB_Rate
+    S$Weight <- S$wOBA_den
     YLAB = "BB Rate"
   }
   # plot versus season or age?
@@ -120,7 +126,8 @@ compare_plot <- function(playerid_1, playerid_2,
     XLAB <- "Age"
   }
   plot1 <- ggplot(S,
-                  aes(XVAR, Outcome, color = Name)) +
+                  aes(XVAR, Outcome, color = Name,
+                      weight = Weight)) +
     geom_point(size = 3) +
     geom_smooth(se = FALSE,
                 method = "loess",
