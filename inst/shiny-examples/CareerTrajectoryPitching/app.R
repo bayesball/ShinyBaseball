@@ -5,7 +5,7 @@ library(Lahman)
 
 fg <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/woba_wts.csv")
 
-selectPlayers2 <- function(M0, W0, minIP){
+selectPlayers2 <- function(midYearRange, minIP){
   require(Lahman)
   Pitching %>%
     mutate(IP = IPouts / 3) %>%
@@ -15,8 +15,8 @@ selectPlayers2 <- function(M0, W0, minIP){
               midYear = (minYear + maxYear) / 2,
               IP = sum(IP),
               .groups = "drop")  %>%
-    filter(midYear <= M0 + W0,
-           midYear >= M0 - W0,
+    filter(midYear <= midYearRange[2],
+           midYear >= midYearRange[1],
            IP >= minIP) %>%
     select(playerID) %>%
     inner_join(Master, by = "playerID") %>%
@@ -135,20 +135,21 @@ ui <- fluidPage(
   theme = shinythemes::shinytheme("slate"),
   h2("Comparing Career Pitching Trajectories"),
   column(3,
-  sliderInput("midyear", "Select Mid Year:",
-              1900, 2010, 1980, sep = ""),
+         sliderInput("midyear", "Select Range of Mid Season:",
+                     1900, 2010,
+            value = c(1975, 1985), sep = ""),
   sliderInput("minpa", "Select Minimum IP:",
               1000, 5000, 2000, sep = ""),
   selectInput("player_name1",
               "Select First Pitcher:",
               choices =
-                selectPlayers2(1980, 10, 2000)$Name),
+                selectPlayers2(c(1975, 1985), 2000)$Name),
   selectInput("player_name2",
               "Select Second Pitcher:",
               choices =
-                selectPlayers2(1980, 10, 2000)$Name),
+                selectPlayers2(c(1975, 1985), 2000)$Name),
   radioButtons("type",
-               "Input Measure:",
+               "Select Measure:",
                c("ERA", "WHIP", "FIP",
                  "SO Rate", "BB Rate"),
                inline = TRUE),
@@ -167,29 +168,29 @@ server <- function(input, output, session) {
   observeEvent(input$midyear, {
     updateSelectInput(inputId = "player_name1",
                       choices =
-          selectPlayers2(input$midyear, 10,
+          selectPlayers2(input$midyear,
                         input$minpa)$Name)
   })
   observeEvent(input$minpa, {
     updateSelectInput(inputId = "player_name1",
                       choices =
-          selectPlayers2(input$midyear, 10,
+          selectPlayers2(input$midyear,
                         input$minpa)$Name)
   })
   observeEvent(input$midyear, {
     updateSelectInput(inputId = "player_name2",
                       choices =
-          selectPlayers2(input$midyear, 10,
+          selectPlayers2(input$midyear,
                        input$minpa)$Name)
   })
   observeEvent(input$minpa, {
     updateSelectInput(inputId = "player_name2",
                       choices =
-          selectPlayers2(input$midyear, 10,
+          selectPlayers2(input$midyear,
                        input$minpa)$Name)
   })
   output$plot1 <- renderPlot({
-    S <- selectPlayers2(input$midyear, 10,
+    S <- selectPlayers2(input$midyear,
                        input$minpa)
     id1 <- filter(S,
               Name == input$player_name1)$playerID
@@ -201,7 +202,7 @@ server <- function(input, output, session) {
   output$downloadData <- downloadHandler(
     filename = "trajectory_output.csv",
     content = function(file) {
-      S <- selectPlayers(input$midyear, 10,
+      S <- selectPlayers2(input$midyear,
                          input$minpa)
       id1 <- filter(S,
                     Name == input$player_name1)$playerID
