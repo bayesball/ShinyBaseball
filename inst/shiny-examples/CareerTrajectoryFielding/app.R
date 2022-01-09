@@ -1,6 +1,7 @@
 library(dplyr)
 library(ggplot2)
 library(Lahman)
+library(geomtextpath)
 
 selectPlayers <- function(midYearRange, minGames,
                           position){
@@ -95,9 +96,10 @@ compare_plot <- function(playerid_1, playerid_2,
   }
   plot1 <- ggplot(S,
                   aes(XVAR, Outcome, color = Name,
-                      weight = Weight)) +
+                      weight = Weight,
+                      label = Name)) +
     geom_point(size = 3) +
-    geom_smooth(se = FALSE,
+    geom_textsmooth(se = FALSE,
                 method = "loess",
                 formula = "y ~ x") +
     ylab(YLAB) +
