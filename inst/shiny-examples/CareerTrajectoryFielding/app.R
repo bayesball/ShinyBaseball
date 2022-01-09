@@ -25,6 +25,8 @@ selectPlayers <- function(midYearRange, minGames,
 compare_plot <- function(playerid_1, playerid_2,
                          measure, xvar, position){
   require(Lahman)
+  if((length(playerid_1) > 0) &
+     (length(playerid_2) > 0)){
   # collect names of two players
   Name1 <- filter(Master, playerID == playerid_1) %>%
     mutate(Name = paste(nameFirst, nameLast)) %>%
@@ -50,7 +52,7 @@ compare_plot <- function(playerid_1, playerid_2,
               RFG = (PO + A) / G,
               FPct = (PO + A) / (PO + A + E),
               .groups = "drop") -> S
-  
+
   # function to obtain birthyear for player
   get_birthyear <- function(playerid) {
     Master %>%
@@ -112,6 +114,7 @@ compare_plot <- function(playerid_1, playerid_2,
                                        size = 16,
                                        hjust = 0.5, vjust = 0.8, angle = 0))
   list(plot1 = plot1, S = S)
+  }
 }
 
 ui <- fluidPage(

@@ -26,6 +26,10 @@ selectPlayers2 <- function(midYearRange, minIP){
 compare_plot <- function(playerid_1, playerid_2,
                          measure, xvar, fg){
   require(Lahman)
+  # check for legitimate input
+  if((length(playerid_1) > 0) &
+     (length(playerid_2) > 0)){
+
   # collect names of two players
   Name1 <- filter(Master, playerID == playerid_1) %>%
     mutate(Name = paste(nameFirst, nameLast)) %>%
@@ -129,6 +133,7 @@ compare_plot <- function(playerid_1, playerid_2,
                                        size = 16,
                   hjust = 0.5, vjust = 0.8, angle = 0))
   list(plot1 = plot1, S = S)
+  }  # end of initial if statement
 }
 
 ui <- fluidPage(
