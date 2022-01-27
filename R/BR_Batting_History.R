@@ -1,6 +1,6 @@
-CareerTrajectoryPitching <- function() {
+BR_Batting_History <- function() {
   appDir <- system.file("shiny-examples",
-                        "CareerTrajectoryPitching",
+                        "BR_Batting_History",
                         package = "ShinyBaseball")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `TeachBayes`.", call. = FALSE)
