@@ -9,8 +9,15 @@ ui <- fluidPage(
   column(4, wellPanel(
   h3(id="big-heading", "Pitch Type Count"),
   tags$style(HTML("#big-heading{color: blue;}")),
+<<<<<<< HEAD
+ # textInput("name", "Pitcher Name:",
+ #           value = "Aaron Nola"),
+  selectInput("name", "Pitcher Name:",
+              choices = unique(sc_pitcher_2019b$Name)),
+=======
   textInput("name", "Pitcher Name:",
             value = ""),
+>>>>>>> parent of 42ac0d2 (revise apps and data)
   tableOutput("table"),
   checkboxGroupInput("pitch_type", "Pitch Type:",
                c("CH", "CU", "EP", "FC",
@@ -34,6 +41,15 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   output$table <- renderTable({
+<<<<<<< HEAD
+    construct_table(sc_pitcher_2019b,
+                    input$name, input$pitch_type)
+  })
+  output$plot <- renderPlot({
+    construct_plot(sc_pitcher_2019b,
+                    input$name, input$pitch_type,
+                    input$count)
+=======
     get_id <- function(st){
       names <- str_to_lower(unlist(str_split(str_squish(st), " ")))
       if(length(names) == 3){
@@ -123,6 +139,7 @@ server <- function(input, output, session) {
       ylim(0, 5) +
       labs(title = paste("2019", get_id(input$name)$Name)) +
      facet_grid(Count ~ pitch_type)
+>>>>>>> parent of 42ac0d2 (revise apps and data)
 }, res = 96)
 }
 
