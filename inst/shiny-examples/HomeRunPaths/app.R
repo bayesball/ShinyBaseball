@@ -5,6 +5,7 @@ library(dplyr)
 library(readr)
 library(lubridate)
 library(gridExtra)
+library(broom)
 
 fit_and_residual_compare <- function(d, playerlist){
   require(ggrepel)
