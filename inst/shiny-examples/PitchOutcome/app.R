@@ -224,9 +224,9 @@ ui <- fluidPage(
   column(4, wellPanel(
   h3(id="big-heading", "Pitch Outcome"),
   tags$style(HTML("#big-heading{color: blue;}")),
-  radioButtons("player_type", "Player Type:",
-               c("Pitcher", "Batter"),
-               inline = TRUE),
+  #radioButtons("player_type", "Player Type:",
+  #             c("Pitcher", "Batter"),
+  #             inline = TRUE),
   selectInput("name", "Player Name:",
             choices = unique(sc_pitcher_2019b$Name)),
   radioButtons("pitch_type", "Pitch Type:",
