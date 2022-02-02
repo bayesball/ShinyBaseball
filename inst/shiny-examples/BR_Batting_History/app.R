@@ -1,6 +1,9 @@
 library(dplyr)
 library(ggplot2)
 
+# data is dataset BR_batting_league_avgs in data
+# folder of package
+
 history_plot <- function(br_data,
                          seasons,
                          measure,

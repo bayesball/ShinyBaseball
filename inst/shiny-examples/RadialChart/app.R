@@ -2,6 +2,9 @@ library(shiny)
 library(dplyr)
 library(stringr)
 
+# data is dataset sc2019_ip_radial in the
+# data folder of package
+
 radial_plot <- function(sc_ip, type,
                         title = ""){
   # note:  requirement is that the file

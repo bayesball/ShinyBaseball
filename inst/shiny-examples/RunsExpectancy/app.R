@@ -4,6 +4,9 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
+# data is dataset twentyyears_RE in  data
+# folder of package
+
 RE <- twentyyears_RE
 RE$Bases <- gsub("[“”]", "", RE$Bases)
 

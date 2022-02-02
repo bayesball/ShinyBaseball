@@ -3,6 +3,9 @@ library(ggplot2)
 library(dplyr)
 library(stringr)
 
+# data is dataset sc2019_ip in
+# data folder in package
+
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(

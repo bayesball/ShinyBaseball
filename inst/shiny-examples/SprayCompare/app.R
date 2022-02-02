@@ -4,6 +4,9 @@ library(dplyr)
 library(stringr)
 library(ShinyBaseball)
 library(tidyr)
+
+# data is dataset sc2019_ip in data folder of package
+
 plot_spray_compare <- function(sc_ip,
                                pname1,
                                pname2,

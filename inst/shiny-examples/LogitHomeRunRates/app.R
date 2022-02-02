@@ -6,6 +6,8 @@ library(readr)
 library(lubridate)
 library(gridExtra)
 
+# data is read from Github repository
+
 # turn off warnings
 options(warn=-1)
 

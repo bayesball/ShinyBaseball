@@ -5,6 +5,9 @@ library(dplyr)
 library(readr)
 library(stringr)
 
+# data is dataset sc2021_ip3 located in
+# data folder of package
+
 # turn off warnings
 options(warn=-1)
 

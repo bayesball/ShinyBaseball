@@ -7,6 +7,9 @@ library(lubridate)
 library(gridExtra)
 library(broom)
 
+# data is dataset top30homerun in
+# data folder in package
+
 fit_and_residual_compare <- function(d, playerlist){
   require(ggrepel)
   d1 <- filter(d, Player %in% playerlist)

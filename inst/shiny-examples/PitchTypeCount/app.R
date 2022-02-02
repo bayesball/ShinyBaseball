@@ -1,5 +1,8 @@
 library(shiny)
 
+# data is dataset sc_pitcher_2019b in data
+# folder of package
+
 construct_table <- function(sc_data,
                             name, pitch_type){
   library(dplyr)

@@ -5,6 +5,8 @@ library(dplyr)
 library(readr)
 library(lubridate)
 
+# datasets are read from a Github repository
+
 # turn off warnings
 options(warn=-1)
 

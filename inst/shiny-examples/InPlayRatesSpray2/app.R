@@ -6,6 +6,9 @@ library(readr)
 library(stringr)
 library(gridExtra)
 
+# data is datafile sc_ip_19_20 in data folder
+# of package
+
 # turn off warnings
 options(warn=-1)
 

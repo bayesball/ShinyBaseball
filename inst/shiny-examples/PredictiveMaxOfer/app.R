@@ -3,6 +3,8 @@ library(ggplot2)
 library(dplyr)
 library(LearnBayes)
 
+# all of the data is simulated from the function
+
 post_pred_simulation <- function(beta_ab,
                                  N,
                                  iter = 500,

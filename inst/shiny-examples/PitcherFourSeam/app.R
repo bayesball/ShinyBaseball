@@ -6,6 +6,9 @@ library(dplyr)
 library(readr)
 library(stringr)
 
+# data is dataset FF_15_20_pitcher in data
+# folder of package
+
 bin_FF_locations_P <- function(sc, plateX, plateZ){
   # inputs:
   # ------------------------------------

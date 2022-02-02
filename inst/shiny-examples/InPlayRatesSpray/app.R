@@ -5,6 +5,9 @@ library(dplyr)
 library(readr)
 library(stringr)
 
+# data is dataset sc2019_ip in data folder
+# of package
+
 # turn off warnings
 options(warn=-1)
 

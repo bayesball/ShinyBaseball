@@ -4,6 +4,9 @@ library(dplyr)
 library(LearnBayes)
 library(Lahman)
 
+# data is dataset retro2019 located in the data
+# folder of the package
+
 pp_markov_simulation <- function(beta1_ab, beta2_ab, rho,
                                  player_name,
                                  retrodata,

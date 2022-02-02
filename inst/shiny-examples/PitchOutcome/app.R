@@ -1,5 +1,8 @@
 library(shiny)
 
+# data is dataset sc_pitcher_2019b in
+# data folder of package
+
 print_table_1 <- function(sc_data, name,
                          pitch_type, pitches){
   library(ggplot2)

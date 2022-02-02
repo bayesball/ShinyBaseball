@@ -4,7 +4,8 @@ library(dplyr)
 library(readr)
 library(stringr)
 
-# read in data from Github site
+# read in datasets from Github repository
+
 sc_ip <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/scip_ip_2021c.csv")
 chadwick <- read.table("https://raw.githubusercontent.com/bayesball/ShinyBaseball/main/data/chadwick.txt",
                        header = TRUE)

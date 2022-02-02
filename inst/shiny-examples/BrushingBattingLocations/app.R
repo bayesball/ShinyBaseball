@@ -4,15 +4,17 @@ library(dplyr)
 library(stringr)
 library(readr)
 
+# datasets are read from my Github repository
+
 sc_ip <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/scip_ip_2021b.csv")
 chadwick <- read.table("https://raw.githubusercontent.com/bayesball/ShinyBaseball/main/data/chadwick.txt",
                            header = TRUE)
-sc_ip %>% 
-  group_by(batter) %>% 
-  summarize(N = n()) %>% 
-  filter(N >= 200)  %>% 
-  inner_join(chadwick, c("batter" = "key_mlbam")) %>% 
-  mutate(Name = paste(name_first, name_last)) %>% 
+sc_ip %>%
+  group_by(batter) %>%
+  summarize(N = n()) %>%
+  filter(N >= 200)  %>%
+  inner_join(chadwick, c("batter" = "key_mlbam")) %>%
+  mutate(Name = paste(name_first, name_last)) %>%
   arrange(name_last) -> S1
 
 draw_field_plot <- function(sc_ip,
@@ -29,14 +31,14 @@ draw_field_plot <- function(sc_ip,
   }
   plot1 <- ggplot() +
     geom_point(data = sc_ip,
-               aes(location_x, location_y, 
+               aes(location_x, location_y,
                    color = Outcome)) +
     coord_fixed(ratio = 1) +
     geom_segment(aes(x = 0, xend = -300,
-                     y = 0, yend = 300), 
+                     y = 0, yend = 300),
                  color = "black") +
     geom_segment(aes(x = 0, xend = 300,
-                     y = 0, yend = 300), 
+                     y = 0, yend = 300),
                  color = "black") +
     geom_path(data = data.frame(
       x = c(0, -63.6, 0, 63.6, 0),
@@ -45,11 +47,11 @@ draw_field_plot <- function(sc_ip,
     draw_circle_segment(420, pi / 2 * .5,
                         pi / 2 * 1.5) +
     labs(title = title, subtitle = subtitle) +
-    theme(plot.title = element_text(colour = "white", 
-                                    size = 18, 
+    theme(plot.title = element_text(colour = "white",
+                                    size = 18,
                                     hjust = 0.5, vjust = 0.8, angle = 0),
           plot.subtitle = element_text(colour = "white",
-                                       size = 16, 
+                                       size = 16,
                                        hjust = 0.5, vjust = 0.8, angle = 0)) +
     theme(plot.background = element_rect(fill = "coral4"),
           axis.text = element_text(color = "white"),
@@ -57,7 +59,7 @@ draw_field_plot <- function(sc_ip,
     theme(
       panel.background = element_rect(fill = "beige",
                                       colour = "grey"))
-  
+
   if(is.numeric(sc_ip$Outcome) == TRUE) {
     plot1 <- plot1 +
       #       scale_color_distiller(palette = "Spectral")
@@ -117,62 +119,62 @@ server <- function(input, output, session) {
   output$plot <- renderPlot({
 
     id_info <- get_id(input$player_name)
-    new_data <- filter(sc_ip, 
+    new_data <- filter(sc_ip,
                        batter == id_info$key_mlbam)
     Stand <- ifelse(mean(new_data$stand == "R") == 1,
-                    "Right", 
+                    "Right",
              ifelse(mean(new_data$stand == "L") == 1,
                     "Left", "Both"))
-    
+
     new_data <- filter(new_data,
                        launch_speed >= input$LS[1],
                        launch_speed <= input$LS[2],
                        launch_angle >= input$LA[1],
                        launch_angle <= input$LA[2])
     if(input$measure == "Hit"){
-      new_data %>% 
-        mutate(Outcome = ifelse(events %in% 
+      new_data %>%
+        mutate(Outcome = ifelse(events %in%
       c("single", "double", "triple", "home_run"),
       "Hit", "Out")) -> new_data
     }
     if(input$measure == "Home Run"){
-      new_data %>% 
-        mutate(Outcome = ifelse(events == "home_run", 
+      new_data %>%
+        mutate(Outcome = ifelse(events == "home_run",
                       "HR", "Not HR")) -> new_data
     }
     if(input$measure == "Double"){
-      new_data %>% 
-        mutate(Outcome = ifelse(events == "double", 
+      new_data %>%
+        mutate(Outcome = ifelse(events == "double",
                                 "Double", "Not Double")) -> new_data
     }
     if(input$measure == "Single"){
-      new_data %>% 
-        mutate(Outcome = ifelse(events == "single", 
+      new_data %>%
+        mutate(Outcome = ifelse(events == "single",
                                 " Single", "Not Single")) -> new_data
     }
     if(input$measure == "Triple"){
-      new_data %>% 
-        mutate(Outcome = ifelse(events == "triple", 
+      new_data %>%
+        mutate(Outcome = ifelse(events == "triple",
                                 " Triple", "Not Triple")) -> new_data
     }
     if(input$measure == "Expected BA"){
-      new_data %>% 
-        mutate(Outcome = 
+      new_data %>%
+        mutate(Outcome =
           estimated_ba_using_speedangle) -> new_data
     }
     if(input$measure == "Expected wOBA"){
-      new_data %>% 
-        mutate(Outcome = 
+      new_data %>%
+        mutate(Outcome =
                  estimated_woba_using_speedangle) -> new_data
     }
-    title <- paste("2021", id_info$Name, 
+    title <- paste("2021", id_info$Name,
                    "- Balls in Play")
     subtitle <- paste("Bats: ", Stand, ", ",
                       input$measure, sep = "")
     draw_field_plot(new_data,
                     title = title,
                     subtitle = subtitle)
-    
+
   }, res = 96)
 
 
@@ -182,7 +184,7 @@ server <- function(input, output, session) {
     }
     req(input$plot_brush)
     id_info <- get_id(input$player_name)
-    new_data <- filter(sc_ip, 
+    new_data <- filter(sc_ip,
                        batter == id_info$key_mlbam,
                        launch_speed >= input$LS[1],
                        launch_speed <= input$LS[2],
@@ -192,14 +194,14 @@ server <- function(input, output, session) {
                       input$plot_brush)
     data.frame(Name = id_info$Name,
                BIP = nrow(sc1),
-               H = sum(sc1$events %in% 
+               H = sum(sc1$events %in%
                  c("single", "double", "triple", "home_run")),
                Mean_LA =
                  mean(sc1$launch_angle, na.rm = TRUE),
                Mean_LS =
                  mean(sc1$launch_speed, na.rm = TRUE),
-               H_Rate = sum(sc1$events %in% 
-                c("single", "double", "triple", "home_run")) / 
+               H_Rate = sum(sc1$events %in%
+                c("single", "double", "triple", "home_run")) /
                     nrow(sc1),
                xBA = mean(sc1$estimated_ba_using_speedangle),
                xwOBA = mean(sc1$estimated_woba_using_speedangle))

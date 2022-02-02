@@ -5,6 +5,8 @@ library(stringr)
 library(tidyr)
 library(sportyR)
 
+# data is dataset sc2019_ip in data folder of package
+
 plot_spray <- function(sc_ip,
                        pname,
                        bb_type = "All",

@@ -1,6 +1,8 @@
 library(shiny)
 library(ggplot2)
-#library(readr)
+
+# data is dataset fb2020batting in data folder
+# of package
 
 fg <- fg2020batting
 
