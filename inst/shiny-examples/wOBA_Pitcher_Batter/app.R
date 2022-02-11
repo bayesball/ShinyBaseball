@@ -1,38 +1,42 @@
+library(shiny)
 library(dplyr)
 library(ggplot2)
-library(shiny)
 library(readr)
+library(Lahman)
+library(LearnBayes)
 
+# read in data work
 all_batter_pitcher_36 <-
   read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/all_batter_pitcher_36.csv")
-#source("general_p_b_plot.R")
-#d <- read_csv("all_batter_pitcher_PA.csv")
-#player_ids <- read_csv("player_ids.csv")
-#d <- read_csv("all_batter_pitcher_36.csv")
-#player_ids <- read_csv("names_batter_pitcher_36.csv")
-#fgwts <- read_csv("fg_guts.csv")
+fg_guts <-
+  read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/fg_guts.csv")
+filter(all_batter_pitcher_36, Type == "Batter") %>%
+     select(BAT_ID, Name, Type) %>%
+     distinct() -> batter_ids
+names(batter_ids)[1] <- "retroID"
+filter(all_batter_pitcher_36, Type == "Pitcher") %>%
+     select(PIT_ID, Name, Type) %>%
+     distinct() -> pitcher_ids
+names(pitcher_ids)[1] <- "retroID"
+names_batter_pitcher_36 <- rbind(batter_ids,
+                                 pitcher_ids)
 
-# convert vars from factor to character
-#for(vars in c(2, 3, 5, 6)){
-#  all_batter_pitcher_36[, vars] <- as.character(
-#       all_batter_pitcher_36[, vars])
-#}
-#for(vars in 1:3){
-#  names_batter_pitcher_36[, vars] <- as.character(
-#    names_batter_pitcher_36[, vars])
-#}
-batter_ids <- filter(names_batter_pitcher_36,
-                     Type == "Batter")
+# sort players by last name
+getlastname <- function(name){
+  unlist(strsplit(name, " "))[2]
+}
+names_batter_pitcher_36$Last_Name <-
+  sapply(names_batter_pitcher_36$Name, getlastname)
+names_batter_pitcher_36 %>%
+  arrange(Type, Last_Name) %>%
+  select(retroID, Name, Type) ->
+  names_batter_pitcher_36
 
+# general function
 general_p_b_plot <- function(dall, dn, type,
                              fgwts, name){
-
   # pitchers against single batter or
   # batters against single pitcher
-  require(LearnBayes)
-  require(dplyr)
-  require(Lahman)
-  require(ggplot2)
 
   # fitting function
   fit.model <- function(ybar, var){
@@ -108,7 +112,8 @@ general_p_b_plot <- function(dall, dn, type,
       select(Name, wOBA, PA, MLM_Est) -> S
   }
 
-  nametitle <- ifelse(type == "Batter", "Pitchers", "Batters")
+  nametitle <- ifelse(type == "Batter", "Pitchers",
+                      "Batters")
 
   the_plot <- ggplot(S, aes(PA, MLM_Est)) +
     geom_point(size=1.5, color = "chocolate") +
@@ -127,6 +132,7 @@ general_p_b_plot <- function(dall, dn, type,
        fit_out = fit_out)
 }
 
+# user interface
 ui <- fluidPage(
   theme = shinythemes::shinytheme("slate"),
   h2("wOBA Pitcher and Batter Matchups: 1960-2021"),
@@ -148,11 +154,9 @@ ui <- fluidPage(
         tableOutput("topAVG")
          ),
 )
-
+# server function
 server <- function(input, output, session) {
-  options(warn=-1)
-
-  observeEvent(input$type, {
+   observeEvent(input$type, {
     updateSelectInput(inputId = "player",
                       choices =
             filter(names_batter_pitcher_36,
@@ -162,7 +166,8 @@ server <- function(input, output, session) {
  output$plot1 <- renderPlot({
  out <- general_p_b_plot(all_batter_pitcher_36,
                          names_batter_pitcher_36,
-                         input$type, fg_guts,
+                         input$type,
+                         fg_guts,
                          input$player)
    out$the_plot
   }, res = 96)
@@ -170,7 +175,8 @@ server <- function(input, output, session) {
   output$the_fit <- renderTable({
     general_p_b_plot(all_batter_pitcher_36,
                      names_batter_pitcher_36,
-                     input$type, fg_guts,
+                     input$type,
+                     fg_guts,
                      input$player)$fit_out
   },
   digits = 3, width = '75%', align = 'c',
@@ -182,8 +188,9 @@ server <- function(input, output, session) {
     req(input$plot_brush)
     out <- general_p_b_plot(all_batter_pitcher_36,
                             names_batter_pitcher_36,
-                            input$type, fg_guts,
-                        input$player)
+                            input$type,
+                            fg_guts,
+                            input$player)
     brushedPoints(out$S,
                   input$plot_brush)
   },
