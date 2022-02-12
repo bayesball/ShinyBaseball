@@ -1,6 +1,6 @@
-wOBA_Pitcher_Batter <- function() {
+wOBA_Matchups <- function() {
   appDir <- system.file("shiny-examples",
-                        "wOBA_Pitcher_Batter",
+                        "wOBA_Matchups",
                         package = "ShinyBaseball")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `TeachBayes`.", call. = FALSE)

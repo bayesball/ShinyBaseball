@@ -48,11 +48,11 @@ general_p_b_plot <- function(dall, dn, type,
       (1 / var + 1 / tau ^ 2)
     list(mu = mu, tau = tau, Estimate = Estimate)
   }
-
+  # extract retroID
   retro.id <- dn %>%
     filter(Type == type, Name == name) %>%
     pull(retroID)
-
+  # only look at subset of full dataset
   dall %>%
     filter(Type == type) -> d
 
@@ -71,6 +71,7 @@ general_p_b_plot <- function(dall, dn, type,
                 wOBA = mean(WT),
                 .groups = "drop") -> S
   }
+  # compute PA and wOBA for each opposing player
   if(type == "Pitcher"){
     d %>%
       filter(PIT_ID == retro.id) %>%
@@ -86,13 +87,13 @@ general_p_b_plot <- function(dall, dn, type,
                 .groups = "drop") -> S
   }
   # need an estimate at sigma -- use sigma = 0.5
-
   the_fit <- fit.model(S$wOBA, 0.5 ^ 2 / S$PA)
 
   S$MLM_Est <- the_fit$Estimate
   fit_out <- data.frame(mu = the_fit$mu,
                         tau = the_fit$tau)
 
+  # create tables for all players
   if(type == "Batter"){
     S %>%
       inner_join(select(Master, retroID,
@@ -151,7 +152,7 @@ ui <- fluidPage(
          plotOutput("plot1",
                     brush = "plot_brush",
                     height = '400px'),
-        tableOutput("topAVG")
+        tableOutput("selectedStats")
          ),
 )
 # server function
@@ -184,7 +185,7 @@ server <- function(input, output, session) {
   caption = "Multilevel Fit:",
   caption.placement = "top")
 
-  output$topAVG <- renderTable({
+  output$selectedStats <- renderTable({
     req(input$plot_brush)
     out <- general_p_b_plot(all_batter_pitcher_36,
                             names_batter_pitcher_36,
