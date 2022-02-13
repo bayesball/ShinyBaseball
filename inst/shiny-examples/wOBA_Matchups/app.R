@@ -39,6 +39,8 @@ general_p_b_plot <- function(dall, dn, type,
   # batters against single pitcher
 
   # assuming sigma is unknown
+  # log posterior function of (mu, log tau, log sigma)
+  # uniform priors on (mu, tau, sigma)
   normnormexch3 <- function (theta, data){
     y <- data[, 1]
     n <- data[, 2]
@@ -65,7 +67,7 @@ general_p_b_plot <- function(dall, dn, type,
     list(mu = mu, tau = tau, sigma = sigma,
          Estimate = Estimate)
   }
-  # extract retroID
+  # extract retroID from inputs
   retro.id <- dn %>%
     filter(Type == type, Name == name) %>%
     pull(retroID)
@@ -74,6 +76,8 @@ general_p_b_plot <- function(dall, dn, type,
     filter(Type == type) -> d
 
   # add fg weights
+  # compute PA and wOBA for each opposing player
+  # first if the type is Batter
   if(type == "Batter"){
     d %>%
       filter(BAT_ID == retro.id) %>%
@@ -88,7 +92,7 @@ general_p_b_plot <- function(dall, dn, type,
                 wOBA = mean(WT),
                 .groups = "drop") -> S
   }
-  # compute PA and wOBA for each opposing player
+  # next if type is Pitcher
   if(type == "Pitcher"){
     d %>%
       filter(PIT_ID == retro.id) %>%
@@ -103,15 +107,16 @@ general_p_b_plot <- function(dall, dn, type,
                 wOBA = mean(WT),
                 .groups = "drop") -> S
   }
-  # assuming sigma is unknown
+  # fit assuming sigma is unknown
   the_fit <- fit.model3(S$wOBA, S$PA)
-
+  # store estimates in S
   S$MLM_Est <- the_fit$Estimate
+  # create table of estimates of (mu, tau, sigma)
   fit_out <- data.frame(mu = the_fit$mu,
                         tau = the_fit$tau,
                         sigma = the_fit$sigma)
 
-  # create tables for all players
+  # create tables of estimates for all players
   if(type == "Batter"){
     S %>%
       inner_join(select(Master, retroID,
@@ -131,9 +136,10 @@ general_p_b_plot <- function(dall, dn, type,
       select(Name, wOBA, PA, MLM_Est) -> S
   }
 
+  # part of title in graph
   nametitle <- ifelse(type == "Batter", "Pitchers",
                       "Batters")
-
+  # create dataset for comparison graph
   S %>%
     mutate(Estimate = wOBA, Type = "Raw") %>%
     select(PA, Estimate, Type) -> S1
@@ -142,6 +148,7 @@ general_p_b_plot <- function(dall, dn, type,
     select(PA, Estimate, Type) -> S2
   S12 <- rbind(S1, S2)
 
+  # comparison of estimates plot
   compare_plot <- ggplot(S12, aes(PA, Estimate,
                                   color = Type)) +
     geom_point(size=1) +
@@ -152,6 +159,7 @@ general_p_b_plot <- function(dall, dn, type,
                                     hjust = 0.5,
                                     vjust = 0.8, angle = 0))
 
+  # plot of multilevel estimates
   the_plot <- ggplot(S, aes(PA, MLM_Est)) +
     geom_point(size=1.5, color = "chocolate") +
     geom_hline(aes(yintercept = sum(PA * wOBA) / sum(PA)),
@@ -164,7 +172,7 @@ general_p_b_plot <- function(dall, dn, type,
     theme(plot.title = element_text(colour = "blue", size = 16,
                                     hjust = 0.5,
                                     vjust = 0.8, angle = 0))
-
+  # output
   list(the_plot = the_plot,
        compare_plot = compare_plot,
        S = S,
@@ -184,7 +192,7 @@ ui <- fluidPage(
                "Select Player:",
                batter_ids$Name),
   radioButtons("plottype",
-               "Plot Type:",
+               "Select Plot Type:",
                c("Comparison", "Multilevel"),
                inline = TRUE),
   hr(), hr(),
