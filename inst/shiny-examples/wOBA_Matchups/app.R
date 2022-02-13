@@ -38,15 +38,32 @@ general_p_b_plot <- function(dall, dn, type,
   # pitchers against single batter or
   # batters against single pitcher
 
+  # assuming sigma is unknown
+  normnormexch3 <- function (theta, data){
+    y <- data[, 1]
+    n <- data[, 2]
+    mu <- theta[1]
+    tau <- exp(theta[2])
+    sigma <- exp(theta[3])
+    logf <- function(mu, tau, sigma, y, n){
+      dnorm(y, mu, sqrt(sigma ^ 2 / n + tau ^ 2),
+            log = TRUE)
+    }
+    sum(logf(mu, tau, sigma, y, n)) +
+      log(tau) + log(sigma)
+  }
   # fitting function
-  fit.model <- function(ybar, var){
-    fit <- laplace(normnormexch,
-                   c(0, 0), cbind(ybar, var))$mode
+  fit.model3 <- function(ybar, n){
+    fit <- laplace(normnormexch3,
+                   c(0, 0, 0),
+                   cbind(ybar, n))$mode
     mu <- fit[1]
     tau <- exp(fit[2])
-    Estimate <- (ybar / var + mu / tau ^ 2) /
-      (1 / var + 1 / tau ^ 2)
-    list(mu = mu, tau = tau, Estimate = Estimate)
+    sigma <- exp(fit[3])
+    Estimate <- (ybar / (sigma ^ 2 / n) + mu / tau ^ 2) /
+      (1 / (sigma ^ 2 / n) + 1 / tau ^ 2)
+    list(mu = mu, tau = tau, sigma = sigma,
+         Estimate = Estimate)
   }
   # extract retroID
   retro.id <- dn %>%
@@ -86,12 +103,13 @@ general_p_b_plot <- function(dall, dn, type,
                 wOBA = mean(WT),
                 .groups = "drop") -> S
   }
-  # need an estimate at sigma -- use sigma = 0.5
-  the_fit <- fit.model(S$wOBA, 0.5 ^ 2 / S$PA)
+  # assuming sigma is unknown
+  the_fit <- fit.model3(S$wOBA, S$PA)
 
   S$MLM_Est <- the_fit$Estimate
   fit_out <- data.frame(mu = the_fit$mu,
-                        tau = the_fit$tau)
+                        tau = the_fit$tau,
+                        sigma = the_fit$sigma)
 
   # create tables for all players
   if(type == "Batter"){
@@ -116,6 +134,24 @@ general_p_b_plot <- function(dall, dn, type,
   nametitle <- ifelse(type == "Batter", "Pitchers",
                       "Batters")
 
+  S %>%
+    mutate(Estimate = wOBA, Type = "Raw") %>%
+    select(PA, Estimate, Type) -> S1
+  S %>%
+    mutate(Estimate = MLM_Est, Type = "Multilevel") %>%
+    select(PA, Estimate, Type) -> S2
+  S12 <- rbind(S1, S2)
+
+  compare_plot <- ggplot(S12, aes(PA, Estimate,
+                                  color = Type)) +
+    geom_point(size=1) +
+    labs(title = paste("Two wOBA Estimates of", nametitle,
+                       "Against", name)) +
+    theme(text = element_text(size = 16)) +
+    theme(plot.title = element_text(colour = "blue", size = 16,
+                                    hjust = 0.5,
+                                    vjust = 0.8, angle = 0))
+
   the_plot <- ggplot(S, aes(PA, MLM_Est)) +
     geom_point(size=1.5, color = "chocolate") +
     geom_hline(aes(yintercept = sum(PA * wOBA) / sum(PA)),
@@ -126,9 +162,11 @@ general_p_b_plot <- function(dall, dn, type,
                        "Against", name)) +
     theme(text = element_text(size = 16)) +
     theme(plot.title = element_text(colour = "blue", size = 16,
-                                    hjust = 0.5, vjust = 0.8, angle = 0))
+                                    hjust = 0.5,
+                                    vjust = 0.8, angle = 0))
 
   list(the_plot = the_plot,
+       compare_plot = compare_plot,
        S = S,
        fit_out = fit_out)
 }
@@ -139,12 +177,16 @@ ui <- fluidPage(
   h2("wOBA Pitcher and Batter Matchups: 1960-2021"),
   column(3,
   radioButtons("type",
-               "Matchups Against::",
+               "Matchups Against:",
                 c("Batter", "Pitcher"),
                    inline = TRUE),
   selectInput("player",
                "Select Player:",
                batter_ids$Name),
+  radioButtons("plottype",
+               "Plot Type:",
+               c("Comparison", "Multilevel"),
+               inline = TRUE),
   hr(), hr(),
   tableOutput("the_fit")
   ),
@@ -170,7 +212,8 @@ server <- function(input, output, session) {
                          input$type,
                          fg_guts,
                          input$player)
-   out$the_plot
+   if(input$plottype == "Multilevel"){out$the_plot} else {
+         out$compare_plot}
   }, res = 96)
 
   output$the_fit <- renderTable({
