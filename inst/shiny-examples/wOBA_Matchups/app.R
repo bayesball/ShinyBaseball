@@ -83,6 +83,7 @@ general_p_b_plot <- function(dall, dn, type,
       filter(BAT_ID == retro.id) %>%
       inner_join(fgwts, by = "Season") %>%
       mutate(WT = wBB * (EVENT_CD %in% 14:15) +
+               wHBP * (EVENT_CD == 16) +
                w1B * (EVENT_CD == 20) +
                w2B * (EVENT_CD == 21) +
                w3B * (EVENT_CD == 22) +
