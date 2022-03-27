@@ -10,6 +10,18 @@ library(metR)
 
 sc2021_2500 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/sc2021_2500.csv")
 
+add_zone <- function(Color = "red"){
+  topKzone <- 3.5
+  botKzone <- 1.6
+  inKzone <- -0.85
+  outKzone <- 0.85
+  kZone <- data.frame(
+    x=c(inKzone, inKzone, outKzone, outKzone, inKzone),
+    y=c(botKzone, topKzone, topKzone, botKzone, botKzone)
+  )
+  geom_path(aes(.data$x, .data$y), data=kZone,
+            lwd=1, col=Color)
+}
 pitch_value_contour <- function(df,
                                 L = seq(-0.2, 0.2, by = 0.01),
                                 title = "Pitch Value",
