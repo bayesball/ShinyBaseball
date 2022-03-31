@@ -242,31 +242,29 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                                       colour = "grey"))
 
 
-  M_inplay <- apply(matrix(round(S12$diff_inplay, 2),
-                           length(LS_breaks) - 1,
-                           length(LA_breaks) - 1),
-                    2, rev)
-  dimnames(M_inplay)[[1]] <-
-    (rev(LS_breaks) - diff(LS_breaks)[1] / 2)[-1]
-  dimnames(M_inplay)[[2]] <-
-    (LA_breaks - diff(LA_breaks)[1] / 2)[-1]
+ # M_inplay <- apply(matrix(round(S12$diff_inplay, 2),
+ #                          length(LS_breaks) - 1,
+ #                          length(LA_breaks) - 1),
+ #                   2, rev)
+ # dimnames(M_inplay)[[1]] <-
+ #  (rev(LS_breaks) - diff(LS_breaks)[1] / 2)[-1]
+ # dimnames(M_inplay)[[2]] <-
+ #   (LA_breaks - diff(LA_breaks)[1] / 2)[-1]
 
-  M_hr <- apply(matrix(round(S12$diff_hr, 2),
-                       length(LS_breaks) - 1,
-                       length(LA_breaks) - 1),
-                2, rev)
-  dimnames(M_hr)[[1]] <-
-    (rev(LS_breaks) - diff(LS_breaks)[1] / 2)[-1]
-  dimnames(M_hr)[[2]] <-
-    (LA_breaks - diff(LA_breaks)[1] / 2)[-1]
+  #M_hr <- apply(matrix(round(S12$diff_hr, 2),
+  #                     length(LS_breaks) - 1,
+  #                     length(LA_breaks) - 1),
+  #              2, rev)
+  #dimnames(M_hr)[[1]] <-
+  #  (rev(LS_breaks) - diff(LS_breaks)[1] / 2)[-1]
+  #dimnames(M_hr)[[2]] <-
+  #  (LA_breaks - diff(LA_breaks)[1] / 2)[-1]
 
   list(S = S12,
        plot1 = plot1,
        plot2 = plot2,
        plot3 = plot3,
-       plot4 = plot4,
-       M_inplay = M_inplay,
-       M_hr = M_hr)
+       plot4 = plot4)
 }
 
 # read in statcast dataset
@@ -309,12 +307,12 @@ ui <- fluidPage(
     column(8,
            tabsetPanel(type = "tabs",
                        tabPanel("Difference in Logits",
-           plotOutput("plot1",
-                      height = "670px")
+                         plotOutput("plot1",
+                         height = "670px")
                        ),
                        tabPanel("Z-Score",
-           plotOutput("plot2",
-                      height = "670px")
+                         plotOutput("plot2",
+                         height = "670px")
            ))
       )
       )
