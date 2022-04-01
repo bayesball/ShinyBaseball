@@ -5,6 +5,7 @@ library(dplyr)
 library(readr)
 library(lubridate)
 library(gridExtra)
+library(scales)
 
 # data is read from Github repository
 
@@ -144,8 +145,9 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    labs(title = paste("In-Play Counts:", season1),
-         subtitle = paste("Total In-Play =", S1$IP[1])) +
+    labs(title = paste(season1, "In-Play Counts"),
+         subtitle = paste("Total In-Play =",
+                          comma(S1$IP[1]))) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -171,7 +173,7 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste("Home Run Counts:", season1)) +
+    ggtitle(paste(season1, "Home Run Counts")) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -197,8 +199,9 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    labs(title = paste("In-Play Counts:", season2),
-         subtitle = paste("Total In-Play =", S2$IP[1])) +
+    labs(title = paste(season2, "In-Play Counts"),
+         subtitle = paste("Total In-Play =",
+                          comma(S2$IP[1]))) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -224,7 +227,7 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste("Home Run Counts:", season2)) +
+    ggtitle(paste(season2, "Home Run Counts")) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
