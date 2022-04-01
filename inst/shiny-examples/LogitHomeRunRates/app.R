@@ -52,7 +52,11 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
     theme(plot.title = element_text(
       colour = "white", size = 14,
       face = "bold",
-      hjust = 0.5, vjust = 0.8, angle = 0))
+      hjust = 0.5, vjust = 0.8, angle = 0),
+      plot.subtitle = element_text(
+        colour = "white", size = 12,
+        face = "bold",
+        hjust = 0.5, vjust = 0.8, angle = 0))
   }
 
   sc %>%
@@ -132,6 +136,112 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
   xlim_hi <- max(LA_breaks) + diff(LA_breaks)[1] / 4
   ylim_lo <- min(LS_breaks) - diff(LS_breaks)[1] / 4
   ylim_hi <- max(LS_breaks) + diff(LS_breaks)[1] / 4
+
+  plot5 <- ggplot(S1, aes(la, ls,
+                  label = N)) +
+    geom_label(size = 6,
+               fill = "red",
+               color = "white") +
+    xlim(xlim_lo, xlim_hi) +
+    ylim(ylim_lo, ylim_hi) +
+    labs(title = paste("In-Play Counts:", season1),
+         subtitle = paste("Total In-Play =", S1$IP[1])) +
+    centertitle() +
+    increasefont() +
+    xlab("Launch Angle") +
+    ylab("Launch Speed") +
+    geom_vline(xintercept = LA_breaks,
+               color = "blue") +
+    geom_hline(yintercept = LS_breaks,
+               color = "blue") +
+    scale_fill_manual(values =
+                        c("darkorange2",
+                          "dodgerblue")) +
+    theme(plot.background = element_rect(fill = "grey25"),
+          axis.text = element_text(color = "white"),
+          axis.title = element_text(color = "white")) +
+    theme(
+      panel.background = element_rect(fill = "bisque",
+                                      colour = "grey"))
+
+  plot6 <- ggplot(S1, aes(la, ls,
+                          label = HR)) +
+    geom_label(size = 6,
+               fill = "red",
+               color = "white") +
+    xlim(xlim_lo, xlim_hi) +
+    ylim(ylim_lo, ylim_hi) +
+    ggtitle(paste("Home Run Counts:", season1)) +
+    centertitle() +
+    increasefont() +
+    xlab("Launch Angle") +
+    ylab("Launch Speed") +
+    geom_vline(xintercept = LA_breaks,
+               color = "blue") +
+    geom_hline(yintercept = LS_breaks,
+               color = "blue") +
+    scale_fill_manual(values =
+                        c("darkorange2",
+                          "dodgerblue")) +
+    theme(plot.background = element_rect(fill = "grey25"),
+          axis.text = element_text(color = "white"),
+          axis.title = element_text(color = "white")) +
+    theme(
+      panel.background = element_rect(fill = "bisque",
+                                      colour = "grey"))
+
+  plot7 <- ggplot(S2, aes(la, ls,
+                          label = N)) +
+    geom_label(size = 6,
+               fill = "red",
+               color = "white") +
+    xlim(xlim_lo, xlim_hi) +
+    ylim(ylim_lo, ylim_hi) +
+    labs(title = paste("In-Play Counts:", season2),
+         subtitle = paste("Total In-Play =", S2$IP[1])) +
+    centertitle() +
+    increasefont() +
+    xlab("Launch Angle") +
+    ylab("Launch Speed") +
+    geom_vline(xintercept = LA_breaks,
+               color = "blue") +
+    geom_hline(yintercept = LS_breaks,
+               color = "blue") +
+    scale_fill_manual(values =
+                        c("darkorange2",
+                          "dodgerblue")) +
+    theme(plot.background = element_rect(fill = "grey25"),
+          axis.text = element_text(color = "white"),
+          axis.title = element_text(color = "white")) +
+    theme(
+      panel.background = element_rect(fill = "bisque",
+                                      colour = "grey"))
+
+  plot8 <- ggplot(S2, aes(la, ls,
+                          label = HR)) +
+    geom_label(size = 6,
+               fill = "red",
+               color = "white") +
+    xlim(xlim_lo, xlim_hi) +
+    ylim(ylim_lo, ylim_hi) +
+    ggtitle(paste("Home Run Counts:", season2)) +
+    centertitle() +
+    increasefont() +
+    xlab("Launch Angle") +
+    ylab("Launch Speed") +
+    geom_vline(xintercept = LA_breaks,
+               color = "blue") +
+    geom_hline(yintercept = LS_breaks,
+               color = "blue") +
+    scale_fill_manual(values =
+                        c("darkorange2",
+                          "dodgerblue")) +
+    theme(plot.background = element_rect(fill = "grey25"),
+          axis.text = element_text(color = "white"),
+          axis.title = element_text(color = "white")) +
+    theme(
+      panel.background = element_rect(fill = "bisque",
+                                      colour = "grey"))
 
   plot1 <- ggplot(S12, aes(la, ls,
                            label = round(diff_inplay, 2))) +
@@ -264,7 +374,11 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
        plot1 = plot1,
        plot2 = plot2,
        plot3 = plot3,
-       plot4 = plot4)
+       plot4 = plot4,
+       plot5 = plot5,
+       plot6 = plot6,
+       plot7 = plot7,
+       plot8 = plot8)
 }
 
 # read in statcast dataset
@@ -306,9 +420,17 @@ ui <- fluidPage(
     )),
     column(8,
            tabsetPanel(type = "tabs",
+                       tabPanel("First Season",
+                                plotOutput("plot1a",
+                                           height = "670px")
+                       ),
+                       tabPanel("Second Season",
+                                plotOutput("plot1b",
+                                           height = "670px")
+                       ),
                        tabPanel("Difference in Logits",
-                         plotOutput("plot1",
-                         height = "670px")
+                                plotOutput("plot1",
+                                           height = "670px")
                        ),
                        tabPanel("Z-Score",
                          plotOutput("plot2",
@@ -319,6 +441,34 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  output$plot1a <- renderPlot({
+    step_LA <- diff(input$rX) / input$nX
+    step_LS <- diff(input$rY) / input$nY
+    LA_breaks <- seq(input$rX[1], input$rX[2],
+                     by = step_LA)
+    LS_breaks <- seq(input$rY[1], input$rY[2],
+                     by = step_LS)
+    out1 <- logit_work(sc, LA_breaks, LS_breaks,
+                       as.numeric(input$year1),
+                       as.numeric(input$year2))
+    grid.arrange(out1$plot5,
+                 out1$plot6)
+  }, res = 96)
+
+  output$plot1b <- renderPlot({
+    step_LA <- diff(input$rX) / input$nX
+    step_LS <- diff(input$rY) / input$nY
+    LA_breaks <- seq(input$rX[1], input$rX[2],
+                     by = step_LA)
+    LS_breaks <- seq(input$rY[1], input$rY[2],
+                     by = step_LS)
+    out1 <- logit_work(sc, LA_breaks, LS_breaks,
+                       as.numeric(input$year1),
+                       as.numeric(input$year2))
+    grid.arrange(out1$plot7,
+                 out1$plot8)
+  }, res = 96)
+
   output$plot1 <- renderPlot({
     step_LA <- diff(input$rX) / input$nX
     step_LS <- diff(input$rY) / input$nY
