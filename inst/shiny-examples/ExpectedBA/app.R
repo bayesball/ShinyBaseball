@@ -2,7 +2,8 @@ library(shiny)
 
 # function that does all of the work
 
-eba_work <- function(sc, LA_breaks, LS_breaks){
+eba_work <- function(sc, LA_breaks, LS_breaks,
+                     type = "BA"){
 
   require(dplyr)
   require(ggplot2)
@@ -57,24 +58,43 @@ eba_work <- function(sc, LA_breaks, LS_breaks){
   ylim_lo <- min(LS_breaks) - diff(LS_breaks)[1] / 4
   ylim_hi <- max(LS_breaks) + diff(LS_breaks)[1] / 4
 
-  # construct plot
+  # select the plotting variable
+
+  if(type == "BA"){
+    S$FVar <- S$EBA
+  }
+  if(type == "H") {
+    S$FVar <- S$Hits
+  }
+  if(type == "In-Play"){
+    S$FVar <- S$IP
+  }
+
+  # define the graph title
+
+  the_title <- ifelse(type == "BA",
+                      "Batting Average",
+               ifelse(type == "In-Play",
+                      "Balls In Play", "Hits"))
+
+  # the plot
 
   ggplot(S, aes(la, ls)) +
-    geom_tile(aes(fill = EBA)) +
+    geom_tile(aes(fill = FVar)) +
     scale_fill_distiller(palette = "RdGy") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
     centertitle() +
     increasefont() +
-    labs(title = "Expected Batting Average") +
     xlab("Launch Angle") +
     ylab("Launch Speed") +
+    ggtitle(the_title) +
     theme(plot.background = element_rect(fill = "grey25"),
           axis.text = element_text(color = "white"),
           axis.title = element_text(color = "white")) +
     theme(
       panel.background = element_rect(fill = "bisque",
-                                      colour = "grey"))
+                                colour = "grey"))
 }
 
 # data is read from Github repository
@@ -101,21 +121,23 @@ ui <- fluidPage(
                           bootswatch = "superhero"),
   fluidRow(
     column(4, wellPanel(
-      h4("Select Inputs:"),
+      radioButtons("type", "Display:",
+                   c("In-Play", "H", "BA"),
+                   inline = TRUE),
       sliderInput("rX", "Range of Launch Angle:",
                   min = -20, max = 50,
                   value = c(-20, 50)),
       sliderInput("sX",
                   "Step Size for Launch Angle:",
-                  min = 1, max = 10,
-                  value = 5),
+                  min = 0.5, max = 10,
+                  value = 2),
       sliderInput("rY", "Range of Launch Speed:",
                   min = 60, max = 110,
                   value = c(60, 110)),
       sliderInput("sY",
                   "Step Size for Launch Speed:",
-                  min = 1, max = 10,
-                  value = 5)
+                  min = 0.5, max = 10,
+                  value = 2)
     )),
     column(8,
            plotOutput("plot1", height = "520px")
@@ -129,7 +151,8 @@ server <- function(input, output, session) {
                      by = input$sX)
     LS_breaks <- seq(input$rY[1], input$rY[2],
                      by = input$sY)
-    eba_work(sc, LA_breaks, LS_breaks)
+    eba_work(sc, LA_breaks, LS_breaks,
+             type = input$type)
   }, res = 96)
 }
 
