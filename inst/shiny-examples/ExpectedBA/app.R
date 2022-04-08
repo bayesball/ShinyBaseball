@@ -9,7 +9,7 @@ eba_work <- function(sc, LA_breaks, LS_breaks,
   require(ggplot2)
   require(stringr)
 
-  # some helper functions
+  # some helper functions in graphing
 
   increasefont <- function (){
     theme(text = element_text(size = 16))
@@ -77,6 +77,11 @@ eba_work <- function(sc, LA_breaks, LS_breaks,
                ifelse(type == "In-Play",
                       "Balls In Play", "Hits"))
 
+  legend_title <- ifelse(type == "BA",
+                      "BA",
+                      ifelse(type == "In-Play",
+                             "IP", "H"))
+
   # the plot
 
   ggplot(S, aes(la, ls)) +
@@ -94,7 +99,8 @@ eba_work <- function(sc, LA_breaks, LS_breaks,
           axis.title = element_text(color = "white")) +
     theme(
       panel.background = element_rect(fill = "bisque",
-                                colour = "grey"))
+                                colour = "grey")) +
+    guides(fill=guide_legend(title=legend_title))
 }
 
 # data is read from Github repository
