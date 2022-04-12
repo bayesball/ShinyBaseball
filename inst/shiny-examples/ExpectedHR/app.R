@@ -3,7 +3,7 @@ library(shiny)
 # function that does all of the work
 
 eba_work <- function(sc, LA_breaks, LS_breaks,
-                     type = "BA"){
+                     type = "Rate"){
 
   require(dplyr)
   require(ggplot2)
@@ -35,8 +35,8 @@ eba_work <- function(sc, LA_breaks, LS_breaks,
            is.na(LS) == FALSE) %>%
     group_by(LA, LS) %>%
     summarize(IP = n(),
-              Hits = sum(H),
-              EBA = Hits / IP,
+              HR = sum(HR),
+              EHR = HR / IP,
               .groups = "drop") -> S
 
   # define bin midpoints
@@ -60,11 +60,11 @@ eba_work <- function(sc, LA_breaks, LS_breaks,
 
   # select the plotting variable
 
-  if(type == "BA"){
-    S$FVar <- S$EBA
+  if(type == "Rate"){
+    S$FVar <- S$EHR
   }
-  if(type == "H") {
-    S$FVar <- S$Hits
+  if(type == "HR") {
+    S$FVar <- S$HR
   }
   if(type == "In-Play"){
     S$FVar <- S$IP
@@ -72,15 +72,15 @@ eba_work <- function(sc, LA_breaks, LS_breaks,
 
   # define the graph title
 
-  the_title <- ifelse(type == "BA",
-                      "Batting Average",
+  the_title <- ifelse(type == "Rate",
+                      "Home Run Rate",
                ifelse(type == "In-Play",
-                      "Balls In Play", "Hits"))
+                      "Balls In Play", "Home Runs"))
 
-  legend_title <- ifelse(type == "BA",
-                      "BA",
+  legend_title <- ifelse(type == "Rate",
+                      "Rate",
                       ifelse(type == "In-Play",
-                             "IP", "H"))
+                             "IP", "HR"))
 
   # the plot
 
@@ -109,13 +109,11 @@ data_work <- function(){
   require(readr)
   require(dplyr)
   sc_2021 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast2021.csv")
-  hits <- c("single", "double", "triple",
-            "home_run")
   sc_2021 %>%
     filter(!events %in% c("sac_bunt", "sac_fly")) %>%
-    mutate(H = ifelse(events %in% hits, 1, 0)) %>%
+    mutate(HR = ifelse(events == "home_run", 1, 0)) %>%
     select(game_year, Game_Date, launch_angle,
-           launch_speed, events, H)
+           launch_speed, events, HR)
 }
 
 # read in statcast dataset
@@ -127,20 +125,20 @@ ui <- fluidPage(
                           bootswatch = "superhero"),
   fluidRow(
     column(4, wellPanel(
-      h4("Expected Batting Average"),
+      h4("Expected Home Runs"),
       radioButtons("type", "Display:",
-                   c("In-Play", "H", "BA"),
+                   c("In-Play", "HR", "Rate"),
                    inline = TRUE),
       sliderInput("rX", "Range of Launch Angle:",
-                  min = -20, max = 50,
-                  value = c(-20, 50)),
+                  min = 10, max = 50,
+                  value = c(10, 50)),
       sliderInput("sX",
                   "Step Size for Launch Angle:",
                   min = 0.5, max = 10,
                   value = 2),
       sliderInput("rY", "Range of Launch Speed:",
-                  min = 60, max = 110,
-                  value = c(60, 110)),
+                  min = 90, max = 115,
+                  value = c(90, 115)),
       sliderInput("sY",
                   "Step Size for Launch Speed:",
                   min = 0.5, max = 10,
