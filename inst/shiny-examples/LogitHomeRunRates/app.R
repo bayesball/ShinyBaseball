@@ -18,6 +18,7 @@ data_work <- function(){
   require(lubridate)
 
   sc_2021 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast2021.csv")
+  sc_2022 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast_2022.csv")
   sc_old <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/SC_BB_mini.csv")
 
   names(sc_old)[2] <- "Game_Date"
@@ -29,8 +30,13 @@ data_work <- function(){
            H = ifelse(events %in% hits, 1, 0)) %>%
     select(game_year, Game_Date, launch_angle,
            launch_speed, events, HR, H) -> sc_2021
-
-  sc <- rbind(sc_old, sc_2021)
+  sc_2022 %>%
+    mutate(HR = ifelse(events == "home_run", 1, 0),
+           H = ifelse(events %in% hits, 1, 0))  %>%
+    select(game_year, Game_Date, launch_angle,
+           launch_speed, events, HR, H) ->
+    sc_2022
+  sc <- rbind(sc_old, sc_2021, sc_2022)
 
   sc %>%
     mutate(Season = year(Game_Date))
@@ -397,14 +403,14 @@ ui <- fluidPage(
                    label = "Select First Season:",
                    choices = c("2015", "2016", "2017",
                              "2018", "2019", "2020",
-                             "2021"),
+                             "2021", "2022"),
                            selected = "2019",
                            inline = TRUE),
       radioButtons("year2",
                    label = "Select Second Season:",
                    choices = c("2015", "2016", "2017",
                                "2018", "2019", "2020",
-                               "2021"),
+                               "2021", "2022"),
                    selected = "2021",
                    inline = TRUE),
       sliderInput("rX", "Range of Launch Angle:",
