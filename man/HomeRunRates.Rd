@@ -2,7 +2,7 @@
 \alias{HomeRunRates}
 
 \title{
-  Shiny App for Comparing Home Run Rates for Two Seasons
+  Shiny App for Comparing Home Run Rates for Statcast Seasons
 }
 \description{
   Shiny app to compare all Statcast seasons with respect to in-play rates and home run rates over launch conditions.

@@ -97,7 +97,7 @@ ui <- fluidPage(
       and the count and rate of home runs from the selected region.
        By choosing the Graph of Rates tab, one sees a graph of the batted ball
         rates and HR rates plotted against season."),
-      p("This app will reflect current 2021 data as the season
+      p("This app will reflect current 2022 season data as the season
         progresses."),
       p("All data is made available through Baseball Savant through the
         website http://baseballsavant.mlb.com.  The data was scraped using
