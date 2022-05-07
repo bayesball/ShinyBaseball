@@ -50,6 +50,23 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
   library(lubridate)
   library(stringr)
 
+  date2020_1 <- ""
+  date2020_2 <- ""
+  if(season1 == 2022) {
+    date2020_1 <- sc %>%
+      filter(game_year == 2022) %>%
+      summarize(max(Game_Date)) %>%
+      pull()
+    date2020_1 <- paste(" through ", date2020_1)
+  }
+  if(season2 == 2022) {
+    date2020_2 <- sc %>%
+      filter(game_year == 2022) %>%
+      summarize(max(Game_Date)) %>%
+      pull()
+    date2020_2 <- paste(" through ", date2020_2)
+  }
+
   # some helper functions
 
   increasefont <- function (){
@@ -151,7 +168,8 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    labs(title = paste(season1, "In-Play Counts"),
+    labs(title = paste(season1, "In-Play Counts",
+                       date2020_1),
          subtitle = paste("Total In-Play =",
                           comma(S1$IP[1]))) +
     centertitle() +
@@ -179,7 +197,8 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste(season1, "Home Run Counts")) +
+    ggtitle(paste(season1, "Home Run Counts",
+                  date2020_1)) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -205,7 +224,8 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    labs(title = paste(season2, "In-Play Counts"),
+    labs(title = paste(season2, "In-Play Counts",
+                       date2020_2),
          subtitle = paste("Total In-Play =",
                           comma(S2$IP[1]))) +
     centertitle() +
@@ -233,7 +253,8 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste(season2, "Home Run Counts")) +
+    ggtitle(paste(season2, "Home Run Counts",
+                  date2020_2)) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
