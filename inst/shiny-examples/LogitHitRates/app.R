@@ -1,4 +1,4 @@
-# app to compute brushed home run rates
+
 library(shiny)
 library(ggplot2)
 library(dplyr)
@@ -95,11 +95,16 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
     group_by(Season, LA, LS) %>%
     summarize(N = n(),
               HR = sum(HR),
+              H = sum(H),
+              H_HR = H - HR,
+              N_HR = N - HR,
               .groups = "drop") -> S
 
   sc %>%
     group_by(Season) %>%
-    summarize(IP = n()) -> S1
+    summarize(IP = n(),
+              total_HR = sum(HR),
+              IP_HR = IP - total_HR) -> S1
 
   inner_join(S, S1, by = "Season") -> S
 
@@ -116,38 +121,38 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
   ###################### compare logits work
 
   S %>%
-    mutate(p_inplay = N / IP,
-           p_hr = HR / N,
+    mutate(p_inplay = N_HR / IP_HR,
+           p_hit = H_HR / N_HR,
            logit_inplay = log(p_inplay) -
              log(1 - p_inplay),
-           logit_hr = log(p_hr) -
-             log(1 - p_hr)) -> S
+           logit_hit = log(p_hit) -
+             log(1 - p_hit)) -> S
 
   S %>%
     filter(Season == season1) %>%
     select(Season, la, ls,
-           IP, N, HR,
-           p_inplay, p_hr,
-           logit_inplay, logit_hr) -> S1
+           IP_HR, N_HR, H_HR,
+           p_inplay, p_hit,
+           logit_inplay, logit_hit) -> S1
   S %>%
     filter(Season == season2) %>%
     select(Season, la, ls,
-           IP, N, HR,
-           p_inplay, p_hr,
-           logit_inplay, logit_hr) -> S2
+           IP_HR, N_HR, H_HR,
+           p_inplay, p_hit,
+           logit_inplay, logit_hit) -> S2
 
   S12 <- inner_join(S1, S2,
                     by = c("la", "ls")) %>%
     mutate(diff_inplay = logit_inplay.y -
              logit_inplay.x,
-           diff_hr = logit_hr.y -
-             logit_hr.x,
+           diff_hit = logit_hit.y -
+             logit_hit.x,
            Z_inplay = diff_inplay /
-             sqrt(1 / IP.x / p_inplay.x / (1 - p_inplay.x) +
-                  1 / IP.y / p_inplay.y / (1 - p_inplay.y)),
-           Z_hr = diff_hr /
-             sqrt(1 / N.x / p_hr.x / (1 - p_hr.x) +
-                  1 / N.y / p_hr.y / (1 - p_hr.y)))
+             sqrt(1 / IP_HR.x / p_inplay.x / (1 - p_inplay.x) +
+                  1 / IP_HR.y / p_inplay.y / (1 - p_inplay.y)),
+           Z_hit = diff_hit /
+             sqrt(1 / N_HR.x / p_hit.x / (1 - p_hit.x) +
+                  1 / N_HR.y / p_hit.y / (1 - p_hit.y)))
 
   the_title = paste("Logit(", season2,
                     ") Minus Logit(", season1,
@@ -162,16 +167,16 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
   ylim_hi <- max(LS_breaks) + diff(LS_breaks)[1] / 4
 
   plot5 <- ggplot(S1, aes(la, ls,
-                  label = N)) +
+                  label = N_HR)) +
     geom_label(size = 6,
                fill = "red",
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    labs(title = paste(season1, "In-Play Counts",
+    labs(title = paste(season1, "In-Play (not HR) Counts",
                        date2020_1),
          subtitle = paste("Total In-Play =",
-                          comma(S1$IP[1]))) +
+                          comma(S1$IP_HR[1]))) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -191,13 +196,13 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                                       colour = "grey"))
 
   plot6 <- ggplot(S1, aes(la, ls,
-                          label = HR)) +
+                          label = H_HR)) +
     geom_label(size = 6,
                fill = "red",
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste(season1, "Home Run Counts",
+    ggtitle(paste(season1, "Hit (not HR) Counts",
                   date2020_1)) +
     centertitle() +
     increasefont() +
@@ -218,16 +223,16 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                                       colour = "grey"))
 
   plot7 <- ggplot(S2, aes(la, ls,
-                          label = N)) +
+                          label = N_HR)) +
     geom_label(size = 6,
                fill = "red",
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    labs(title = paste(season2, "In-Play Counts",
+    labs(title = paste(season2, "In-Play (not HR) Counts",
                        date2020_2),
          subtitle = paste("Total In-Play =",
-                          comma(S2$IP[1]))) +
+                          comma(S2$IP_HR[1]))) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -247,13 +252,13 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                                       colour = "grey"))
 
   plot8 <- ggplot(S2, aes(la, ls,
-                          label = HR)) +
+                          label = H_HR)) +
     geom_label(size = 6,
                fill = "red",
                color = "white") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste(season2, "Home Run Counts",
+    ggtitle(paste(season2, "Hit (not HR) Counts",
                   date2020_2)) +
     centertitle() +
     increasefont() +
@@ -301,14 +306,14 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                                       colour = "grey"))
 
   plot2 <- ggplot(S12, aes(la, ls,
-                           label = round(diff_hr, 2))) +
+                           label = round(diff_hit, 2))) +
     geom_label(size = 6,
-               aes(fill = diff_hr > 0),
+               aes(fill = diff_hit > 0),
                color = "white") +
     theme(legend.position = "none") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste("Home Run Rates:", the_title)) +
+    ggtitle(paste("Hit Rates:", the_title)) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -355,14 +360,14 @@ logit_work <- function(sc, LA_breaks, LS_breaks,
                                       colour = "grey"))
 
   plot4 <- ggplot(S12, aes(la, ls,
-                           label = round(Z_hr, 2))) +
+                           label = round(Z_hit, 2))) +
     geom_label(size = 6,
-               aes(fill = Z_hr > 0),
+               aes(fill = Z_hit > 0),
                color = "white") +
     theme(legend.position = "none") +
     xlim(xlim_lo, xlim_hi) +
     ylim(ylim_lo, ylim_hi) +
-    ggtitle(paste("Home Run Rates:", the_title2)) +
+    ggtitle(paste("Hit Rates:", the_title2)) +
     centertitle() +
     increasefont() +
     xlab("Launch Angle") +
@@ -420,7 +425,7 @@ ui <- fluidPage(
                           bootswatch = "superhero"),
   fluidRow(
     column(4, wellPanel(
-      h5("Home Run Rates on Balls in Play"),
+      h5("Hit Rates on Balls in Play"),
       radioButtons("year1",
                    label = "Select First Season:",
                    choices = c("2015", "2016", "2017",
@@ -436,7 +441,7 @@ ui <- fluidPage(
                    selected = "2021",
                    inline = TRUE),
       sliderInput("rX", "Range of Launch Angle:",
-                  min = 0, max = 50,
+                  min = -20, max = 50,
                   value = c(20, 40)),
       numericInput("nX",
                   "Number of Groups for Launch Angle:",

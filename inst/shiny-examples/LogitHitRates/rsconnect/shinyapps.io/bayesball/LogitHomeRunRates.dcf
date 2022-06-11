@@ -1,0 +1,13 @@
+name: LogitHomeRunRates
+title: LogitHomeRunRates
+username:
+account: bayesball
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5945527
+bundleId: 5806801
+url: https://bayesball.shinyapps.io/LogitHomeRunRates/
+when: 1650200402.54958
+lastSyncTime: 1650200402.54961
+asMultiple: FALSE
+asStatic: FALSE
