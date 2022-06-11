@@ -120,7 +120,7 @@ general_p_b_plot <- function(dall, dn, type,
   # create tables of estimates for all players
   if(type == "Batter"){
     S %>%
-      inner_join(select(Master, retroID,
+      inner_join(select(People, retroID,
                         nameFirst, nameLast),
                  by = c("PIT_ID" = "retroID")) %>%
       mutate(Name = paste(nameFirst, nameLast),
@@ -129,7 +129,7 @@ general_p_b_plot <- function(dall, dn, type,
   }
   if(type == "Pitcher"){
     S %>%
-      inner_join(select(Master, retroID,
+      inner_join(select(People, retroID,
                         nameFirst, nameLast),
                  by = c("BAT_ID" = "retroID")) %>%
       mutate(Name = paste(nameFirst, nameLast),
