@@ -1,5 +1,5 @@
-\name{sc_pitcher_2019}
-\alias{sc_pitcher_2019}
+\name{sc_pitcher_2019b}
+\alias{sc_pitcher_2019b}
 
 \title{
   2019 Statcast Pitch Data
@@ -8,7 +8,7 @@
   Statcast pitch measurements for 2019 season
 }
 \usage{
-  sc_pitcher_2019
+  sc_pitcher_2019b
 }
 \format{
    A data frame with 732,473 observations on the following 12 variables.

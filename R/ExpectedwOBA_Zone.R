@@ -1,0 +1,10 @@
+ExpectedwOBA_Zone <- function() {
+  appDir <- system.file("shiny-examples",
+                        "ExpectedwOBA_Zone",
+                        package = "ShinyBaseball")
+  if (appDir == "") {
+    stop("Could not find example directory. Try re-installing `TeachBayes`.", call. = FALSE)
+  }
+
+  shiny::runApp(appDir, display.mode = "normal")
+}

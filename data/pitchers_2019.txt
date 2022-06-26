@@ -1,0 +1,21 @@
+Name SC_id
+"Gerrit Cole" 543037
+"Aaron Nola" 605400
+"Trevor Bauer" 545333
+"Mike Minor" 501985
+"Jacob DeGrom" 594798
+"Lance Lynn" 458681
+"Justin Verlander" 434378
+"Stephen Strasburg" 544931
+"Eduardo Rodríguez" 593958
+"Jack Flaherty" 656427
+"Max Scherzer" 453286
+"Lucas Giolito" 608337
+"Yu Darvish" 506433
+"Madison Bumgarner" 518516
+"Ivan Nova" 467100
+"Patrick Corbin" 571578
+"Shane Bieber" 669456
+"Zach Eflin" 621107
+"Sandy Alcantara" 645261
+"Charlie Morton" 450203

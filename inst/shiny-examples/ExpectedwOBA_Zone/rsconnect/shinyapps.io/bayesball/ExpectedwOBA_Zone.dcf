@@ -1,0 +1,13 @@
+name: ExpectedwOBA_Zone
+title: ExpectedwOBA_Zone
+username:
+account: bayesball
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6552593
+bundleId: 6044551
+url: https://bayesball.shinyapps.io/ExpectedwOBA_Zone/
+when: 1656267719.97461
+lastSyncTime: 1656267719.97464
+asMultiple: FALSE
+asStatic: FALSE
