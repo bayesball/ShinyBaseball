@@ -107,7 +107,7 @@ ui <- fluidPage(
                    c("batter", "pitcher"),
                    inline = TRUE),
       sliderInput("minIP",
-                  "Select Minimum Number of In-Play:",
+                  "Select Minimum Number In-Play:",
                   min = 50, max = 500,
                   value = 200),
       selectInput("player",
