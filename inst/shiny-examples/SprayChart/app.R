@@ -5,7 +5,8 @@ library(stringr)
 library(tidyr)
 library(sportyR)
 
-# data is dataset sc2019_ip in data folder of package
+# scip2019_new <- read_csv("scip2019_new.csv")
+# data is dataset scip2019_new in data folder of package
 
 plot_spray <- function(sc_ip,
                        pname,
@@ -17,7 +18,7 @@ plot_spray <- function(sc_ip,
     filter(is.na(launch_angle) == FALSE) %>%
     mutate(BB_Type = ifelse(launch_angle < 10, "Ground ball",
                             ifelse(launch_angle < 25, "Line drive",
-                                   ifelse(launch_angle < 50, "Fly ball",
+                            ifelse(launch_angle < 50, "Fly ball",
                                           "Pop up")))) ->
     sc_ip
 
@@ -179,7 +180,7 @@ server <- function(input, output, session) {
     }
     pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
-    sc2019_ip %>%
+    scip2019_new %>%
       filter(player_name ==
                get_id(input$name)$Name,
              is.na(launch_angle) == FALSE) %>%
@@ -208,7 +209,7 @@ server <- function(input, output, session) {
     }
     pid <- get_id(input$name)$key_mlbam
     req(length(pid) > 0)
-    plot_spray(sc2019_ip,
+    plot_spray(scip2019_new,
                get_id(input$name)$Name,
                input$type)
   })

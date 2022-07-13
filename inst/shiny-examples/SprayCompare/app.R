@@ -5,7 +5,8 @@ library(stringr)
 library(ShinyBaseball)
 library(tidyr)
 
-# data is dataset sc2019_ip in data folder of package
+# scip2019_new <- read_csv("scip2019_new.csv")
+# data is dataset scip2019_new in data folder of package
 
 plot_spray_compare <- function(sc_ip,
                                pname1,
@@ -174,7 +175,7 @@ server <- function(input, output, session) {
     req(length(pid1) > 0 & length(pid2) > 0)
     two_names <- c(get_id(input$name1)$Name,
                    get_id(input$name2)$Name)
-    sc2019_ip %>%
+    scip2019_new %>%
       filter(player_name %in% two_names,
              is.na(launch_angle) == FALSE) %>%
       mutate(Type = ifelse(launch_angle < 10,
@@ -203,7 +204,7 @@ server <- function(input, output, session) {
     pid1 <- get_id(input$name1)$key_mlbam
     pid2 <- get_id(input$name2)$key_mlbam
     req(length(pid1) > 0 & length(pid2) > 0)
-    plot_spray_compare(sc2019_ip,
+    plot_spray_compare(scip2019_new,
                get_id(input$name1)$Name,
                get_id(input$name2)$Name,
                input$type)

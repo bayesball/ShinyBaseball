@@ -1,5 +1,7 @@
 library(shiny)
 
+# data is read from Github repository
+
 # function that does all of the work
 
 eba_work <- function(sc, LA_breaks, LS_breaks,

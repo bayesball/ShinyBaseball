@@ -6,7 +6,7 @@ library(mgcv)
 library(metR)
 
 # uses dataset sc2021_2500
-# not currently in package
+# from Github site
 
 sc2021_2500 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/sc2021_2500.csv")
 

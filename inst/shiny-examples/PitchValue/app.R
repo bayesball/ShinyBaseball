@@ -6,6 +6,8 @@ library(mgcv)
 library(metR)
 library(ggdensity)
 
+# uses datafile sc2019_pv in the data folder
+
 add_zone <- function(Color = "red"){
   topKzone <- 3.5
   botKzone <- 1.6
