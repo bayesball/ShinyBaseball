@@ -32,7 +32,7 @@ plot_spray <- function(sc_ip,
   sc_ip %>%
     mutate(phi1 = ifelse(stand == "L",
                          - spray_angle, spray_angle),
-           adj_location_x = ifelse(stand == "L",
+          adj_location_x = ifelse(stand == "L",
                                    - location_x, location_x)) ->
     sc_ip
 

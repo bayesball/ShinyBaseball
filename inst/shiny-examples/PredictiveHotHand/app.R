@@ -61,7 +61,7 @@ pp_markov_simulation <- function(beta1_ab, beta2_ab, rho,
   }
 
   the_names <- unlist(strsplit(player_name, " "))
-  player_id <- Master %>%
+  player_id <- People %>%
     filter(nameLast == the_names[2],
            nameFirst == the_names[1]) %>%
     pull(retroID)

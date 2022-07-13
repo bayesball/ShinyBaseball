@@ -1,5 +1,5 @@
-\name{FF_15_20}
-\alias{FF_15_20}
+\name{FF_15_20_pitcher}
+\alias{FF_15_20_pitcher}
 
 \title{
   Four-Seam Fastball Statcast Data
@@ -8,7 +8,7 @@
   Statcast measurements on four-seam fastballs for 2015-2020 seasons
 }
 \usage{
-  FF_15_20
+  FF_15_20_pitcher
 }
 \format{
    A data frame with 1,368,736 observations on the following 10 variables.

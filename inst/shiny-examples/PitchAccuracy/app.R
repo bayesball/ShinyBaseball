@@ -3,6 +3,8 @@ library(ggplot2)
 library(dplyr)
 library(ShinyBaseball)
 
+# uses dataset sc2019_pv in data folder
+
 pv_region <- function(scv,
                       pitchtype,
                       counts,
