@@ -10,7 +10,7 @@ ui <- fluidPage(
   fluidRow(
     column(4, wellPanel(
      selectInput("name", "Select 2019 Pitcher:",
-                  unique(sc_pitchers_2019c$Name)),
+                 sort(unique(sc_pitchers_2019c$Name))),
       radioButtons("side", "Batter Side:",
              c("L", "R"),
              inline = TRUE),

@@ -19,9 +19,9 @@
   \item{hc_y}{landing location of ball in play - y}
    \item{launch_angle}{launch angle (degrees)}
    \item{H}{number variable that is 1 for a hit, 0 otherwise}
-}
+}}
 \source{
-Basball Savant
+Baseball Savant
 }
 
 
