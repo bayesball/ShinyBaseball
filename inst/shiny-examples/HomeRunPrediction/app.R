@@ -1,12 +1,12 @@
 library(shiny)
 
+library(LearnBayes)
+library(dplyr)
+library(janitor)
+library(ggplot2)
+
 predict_hr <- function(prior, y_n, mu_sigma,
                        iterations = 1000){
-
-  require(LearnBayes)
-  require(dplyr)
-  require(janitor)
-  require(ggplot2)
 
   # find beta shape parameters
   a_b <- beta.select(list(x = prior[1],
