@@ -4,6 +4,17 @@ library(LearnBayes)
 library(dplyr)
 library(janitor)
 library(ggplot2)
+library(baseballr)
+
+# read in current data from bref and fangraphs
+today <- Sys.Date()
+d1 <- bref_standings_on_date(today, "AL East")
+wl <- d1[d1$Tm == "NYY", c("W", "L")]
+games_remaining <- 162 - wl$W[1] - wl$L[1]
+
+# problem with this function on 8/27/22
+d <- fg_batter_leaders(2022, 2022)
+d %>% filter(Name == "Aaron Judge") -> judge
 
 predict_hr2 <- function(prior, y_n, PA){
 
@@ -51,18 +62,27 @@ predict_hr2 <- function(prior, y_n, PA){
                  mapping = aes(xend = HR,
                                yend = 0),
                  size = 3, color = "red") +
-    ggtitle(paste("Mean Prediction:", y_n[1],
+    labs(subtitle = paste("Mean Prediction:", y_n[1],
                   "+", round(SU$Mean, 1),
                   "=", round(SU$Mean + y_n[1], 1),
-                  "\n Prob(62+ home runs) = ",
+                  "\n Prob(62+ HR) = ",
                   round(y62, 2),
-                  "\n", p_text)) +
+                  "\n", p_text),
+         title = paste("Aaron Judge's HR Prediction on",
+                       today)) +
     xlab("Future Home Runs") +
     ylab("Probability") +
     theme(text=element_text(size=20)) +
-    theme(plot.title = element_text(colour = "blue",
-                                    size = 24,
-                                    hjust = 0.5, vjust = 0.8, angle = 0))
+    theme(plot.subtitle = element_text(colour = "blue",
+                                    size = 20,
+                                    hjust = 0.5,
+                                    vjust = 0.8,
+                                    angle = 0),
+          plot.title = element_text(colour = "red",
+                                       size = 24,
+                                       hjust = 0.5,
+                                       vjust = 0.8,
+                                       angle = 0))
 }
 
 # shiny app
@@ -79,13 +99,13 @@ ui <- fluidPage(
       tableOutput("out1"),
       numericInput("PA",
                    "Observed PA:",
-                   value = 479),
+                   value = judge$PA),
       numericInput("HR",
                    "Observed HR:",
-                   value = 45),
+                   value = judge$HR),
       numericInput("Games",
                   "Future Games:",
-                  value = 50),
+                  value = games_remaining),
       tableOutput("out2")
     )),
     column(8,

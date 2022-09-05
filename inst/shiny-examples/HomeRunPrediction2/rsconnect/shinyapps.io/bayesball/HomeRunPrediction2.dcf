@@ -1,0 +1,13 @@
+name: HomeRunPrediction2
+title: HomeRunPrediction2
+username:
+account: bayesball
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6846983
+bundleId: 6246312
+url: https://bayesball.shinyapps.io/HomeRunPrediction2/
+when: 1661735236.74887
+lastSyncTime: 1661735236.74889
+asMultiple: FALSE
+asStatic: FALSE
