@@ -95,7 +95,7 @@ ui <- fluidPage(
       sliderInput("HR_Rate",
                   "Select Quartiles of Prior (< 2022) of Judge's True HR Rate Per PA:",
                   min = 0.01, max = 0.2,
-                  value = c(.05, .09)),
+                  value = c(.054, .066)),
       tableOutput("out1"),
       numericInput("PA",
                    "Observed PA:",
