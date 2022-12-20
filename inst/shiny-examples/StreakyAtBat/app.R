@@ -1,11 +1,10 @@
-# expected hits version
+
 library(shiny)
 library(ggplot2)
 library(dplyr)
-library(readr)
 library(stringr)
-library(ShinyBaseball)
 library(Lahman)
+library(BayesTestStreak)
 
 # data is dataset retro2019 located in
 # data folder of ShinyBaseball package
@@ -13,26 +12,70 @@ library(Lahman)
 # turn off warnings
 options(warn=-1)
 
-#scip <- read_csv("sc2021_ip3.csv")
-#chadwick <- read_csv("chadwick.csv")
-
 retro2019 %>%
-  filter(AB_FL == TRUE) %>%
   group_by(BAT_ID) %>%
-  summarize(AB = n()) %>%
+  summarize(AB = sum(AB_FL)) %>%
   filter(AB >= 200)  %>%
   inner_join(People, c("BAT_ID" = "retroID")) %>%
   mutate(Name = paste(nameFirst, nameLast)) %>%
   arrange(nameLast) %>%
   select(Name, BAT_ID) -> S1
 
-##############################################
-setup_data <- function(retrodata, batid){
-  retrodata %>%
-    filter(BAT_ID == batid)  %>%
-    arrange(GAME_ID, INN_CT)
-}
 #############################################
+
+bayes_factor_app <- function(retrodata,
+                         retroid,
+                         type = "H"){
+  require(Lahman)
+
+  filter(People, retroID == retroid) %>%
+    mutate(Name = paste(nameFirst, nameLast)) %>%
+    pull(Name) -> name
+
+  retrodata %>%
+    filter(BAT_ID == retroid) %>%
+    arrange(GAME_ID, INN_CT) %>%
+    mutate(Type = type,
+           AB_number = row_number()) -> d
+
+  if(type == "H"){
+    d$Outcome <- ifelse(d$EVENT_CD %in% 20:23, 1, 0)
+  }
+  if(type == "HR"){
+    d$Outcome <- ifelse(d$EVENT_CD == 23, 1, 0)
+  }
+  if(type == "not SO"){
+    d$Outcome <- ifelse(d$EVENT_CD == 3, 0, 1)
+  }
+  if(type == "SO"){
+    d$Outcome <- ifelse(d$EVENT_CD == 3, 1, 0)
+  }
+
+  bf_out <- bayes_factor_logK(d)
+  max_bf <- summarize(bf_out,
+                      M = max(log_BF)) %>%
+    pull(M)
+
+  ggplot(bf_out,
+         aes(log_K, log_BF)) +
+    geom_line(linewidth = 2) +
+    geom_hline(yintercept = 0,
+               color = "red") +
+    theme(axis.text = element_text(size = rel(1.5))) +
+    theme(axis.title = element_text(size = rel(1.5))) +
+    xlab("log K") +
+    ylab("log Bayes Factor") +
+    labs(title = paste(name, type),
+         subtitle = paste("Max log Bayes Factor =",
+                          round(max_bf, 2))) +
+    theme(plot.title = element_text(colour = "blue",
+                                    size = 18,
+                                    hjust = 0.5, vjust = 0.8, angle = 0),
+          plot.subtitle = element_text(colour = "red",
+                                       size = 16,
+                                       hjust = 0.5, vjust = 0.8, angle = 0))
+
+}
 spacings_sim <- function(retrodata,
                          retroid,
                          type = "H",
@@ -58,6 +101,7 @@ spacings_sim <- function(retrodata,
 
   retrodata %>%
     filter(BAT_ID == retroid) %>%
+    arrange(GAME_ID, INN_CT) %>%
     mutate(Type = type,
            AB_number = row_number()) -> d
 
@@ -95,7 +139,7 @@ spacings_sim <- function(retrodata,
     geom_histogram(color = "white",
                    fill = "tan",
                    bins = 10) +
-    geom_vline(xintercept = Observed, lwd = 2,
+    geom_vline(xintercept = Observed, linewidth = 2,
                color = "red") +
     theme(axis.text = element_text(size = rel(1.5))) +
     theme(axis.title = element_text(size = rel(1.5))) +
@@ -135,6 +179,7 @@ geometric_plot_app <- function(retrodata,
 
   retrodata %>%
     filter(BAT_ID == retroid) %>%
+    arrange(GAME_ID, INN_CT) %>%
     mutate(Type = type,
            AB_number = row_number()) -> d
 
@@ -194,6 +239,7 @@ moving_average_plot <- function(retrodata,
 
   retrodata %>%
     filter(BAT_ID == retroid) %>%
+    arrange(GAME_ID, INN_CT) %>%
     mutate(Width = width,
            Type = type,
            AB_number = row_number()) -> d
@@ -286,7 +332,7 @@ ui <- fluidPage(
       )),
     column(8,
            tabsetPanel(type = "tabs",
-              tabPanel("Moving Average Plot",
+              tabPanel("Moving Averages",
                    plotOutput("plot1",
                        height = "500px")
               ),
@@ -296,6 +342,10 @@ ui <- fluidPage(
               ),
               tabPanel("Simulation",
                        plotOutput("plot3",
+                                  height = "500px")
+              ),
+              tabPanel("Bayes Factor",
+                       plotOutput("plot4",
                                   height = "500px")
               ),
               tabPanel("Description",
@@ -355,6 +405,16 @@ server <- function(input, output, session) {
                         Name == input$player_name) %>%
       pull(BAT_ID)
     spacings_sim(filter(retro2019,
+                        AB_FL == TRUE),
+                 retroid = player_id,
+                 type = input$type)
+  }, res = 96)
+
+  output$plot4 <- renderPlot({
+    player_id <- filter(S1,
+                        Name == input$player_name) %>%
+      pull(BAT_ID)
+    bayes_factor_app(filter(retro2019,
                         AB_FL == TRUE),
                  retroid = player_id,
                  type = input$type)
