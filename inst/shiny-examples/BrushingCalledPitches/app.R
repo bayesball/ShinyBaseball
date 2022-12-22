@@ -27,14 +27,18 @@ construct_plot <- function(sc_called_subset,
     geom_point(size = 0.5) +
     add_zone(Color = "black") +
     coord_fixed() +
-    ggtitle(paste("Pitcher Side: ", pside,
+    labs(title = paste("Pitcher Side: ", pside,
                   ", Batter Side: ", bside,
-                  sep = "")) +
+                  sep = ""),
+         subtitle = "USE MOUSE TO SELECT REGION") +
     xlim(-1.5, 1.5) + ylim(1, 4) +
     theme(text=element_text(size=18)) +
     theme(plot.title = element_text(colour = "blue",
                   size = 16,
-              hjust = 0.5, vjust = 0.8, angle = 0)) +
+              hjust = 0.5, vjust = 0.8, angle = 0),
+          plot.subtitle = element_text(colour = "red",
+                  size = 14,
+             hjust = 0.5, vjust = 0.8, angle = 0)) +
     scale_colour_manual(values =
                           c("tan", "red"))
 }
