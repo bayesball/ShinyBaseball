@@ -10,12 +10,20 @@ library(ggplot2)
 RE <- twentyyears_RE
 RE$Bases <- gsub("[“”]", "", RE$Bases)
 
-make_plot <- function(RE, season, type){
-  R <- filter(RE, Season == season)
+make_plot <- function(RE, seasons, type){
+
+  title_season <- paste(min(seasons), "-", max(seasons),
+                        sep = "")
+  filter(RE, Season %in% seasons) %>%
+    group_by(Bases, Outs) %>%
+    summarize(Mean = mean(Mean),
+              Prob = mean(Prob),
+              Prob2 = mean(Prob2),
+              .groups = "drop") -> R
 
   R$Bases <- factor(R$Bases,
-                    levels = c("000", "100", "020", "003",
-                               "120", "103", "023", "123"))
+                    levels = c("000", "100", "020", "120",
+                               "003", "103", "023", "123"))
   R$Outs <- as.character(R$Outs)
 
   if(type == "RE"){
@@ -25,7 +33,7 @@ make_plot <- function(RE, season, type){
       geom_smooth(method = "lm",
                   formula = "y ~ x",
                   se = FALSE) +
-      ggtitle(paste(season, "Season, Expected Runs")) +
+      ggtitle(paste(title_season, "Seasons, Expected Runs")) +
       theme(text = element_text(size = 18),
             plot.title = element_text(colour = "blue",
                                       size = 18,
@@ -40,8 +48,8 @@ make_plot <- function(RE, season, type){
       geom_smooth(method = "lm",
                   formula = "y ~ x",
                   se = FALSE) +
-      ggtitle(paste(season,
-                    "Season, Probability of Scoring")) +
+      ggtitle(paste(title_season,
+                    "Seasons, Probability of Scoring")) +
       theme(text = element_text(size = 18),
             plot.title = element_text(colour = "blue",
                                       size = 18,
@@ -56,8 +64,8 @@ make_plot <- function(RE, season, type){
       geom_smooth(method = "lm",
                   formula = "y ~ x",
                   se = FALSE) +
-      ggtitle(paste(season,
-                    "Season, Probability of Scoring 2 or More Runs")) +
+      ggtitle(paste(title_season,
+                    "Seasons, Probability of Scoring 2 or More Runs")) +
       theme(text = element_text(size = 18),
             plot.title = element_text(colour = "blue",
                                       size = 18,
@@ -68,12 +76,19 @@ make_plot <- function(RE, season, type){
   p1
 }
 
-make_fit <- function(RE, season, type){
-  R <- filter(RE, Season == season)
+make_fit <- function(RE, seasons, type){
+  filter(RE, Season %in% seasons) %>%
+    group_by(Bases, Outs) %>%
+    summarize(Mean = mean(Mean),
+              Prob = mean(Prob),
+              Prob2 = mean(Prob2),
+              .groups = "drop") -> R
 
-  R$Score <- c(0, 3, 2, 6, 1, 5, 4, 7,
-               0, 3, 2, 6, 1, 5, 4, 7,
-               0, 3, 2, 6, 1, 5, 4, 7)
+  compute_score <- function(bases){
+    b <- as.numeric(unlist(strsplit(bases, "")))
+    sum((b == 1) + 2 * (b == 2) + 4 * (b == 3))
+  }
+  R$Score <- sapply(R$Bases, compute_score)
   R$Outs <- as.character(R$Outs)
 
   if(type == "RE"){
@@ -98,9 +113,9 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       br(),
-      sliderInput("season", "Select Season:",
+      sliderInput("seasons", "Select Seasons:",
                   min = 2000, max = 2019,
-                  value = 2000, sep = ""),
+                  value = c(2000, 2019), sep = ""),
       radioButtons("type", "Select Metric:",
                    choices = c("Expected Runs",
                                "Probability of Scoring",
@@ -120,18 +135,22 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   output$runs_expectancy <- renderUI({
-    req(input$season)
+    req(input$seasons)
 
-    season_n <- as.numeric(input$season)
+    season_title <- paste(input$seasons[1],
+                          input$seasons[2],
+                          sep = "-")
+    season_n <- input$seasons[1]:input$seasons[2]
 
     if(input$type == "Expected Runs"){
-    RE_season <- filter(RE, Season == season_n) %>%
-      select(Outs, Bases, Mean)
-    pivot_wider(RE_season,
-                names_from = Bases,
+    RE_season <- filter(RE, Season %in% season_n) %>%
+      group_by(Outs, Bases) %>%
+      summarize(Mean = round(mean(Mean), 3),
+                .groups = "drop") %>%
+    pivot_wider(names_from = Bases,
                 values_from = Mean) -> RE_season
-    RE_season <- RE_season[, c(1, 2, 6, 4, 3,
-                             8, 7, 5, 9)]
+    RE_season <- RE_season[, c(1, 2, 6, 4, 8,
+                             3, 7, 5, 9)]
 
     RE_season %>%
       flextable() %>%
@@ -139,20 +158,21 @@ server <- function(input, output) {
                               "", ""),
                      colwidths = c(6, 1, 1, 1)) %>%
       set_caption(
-            caption = paste(season_n,
+            caption = paste(season_title,
                         "Runs Expectancy Matrix")) %>%
       theme_vader() %>%
       autofit() %>%
       htmltools_value()
     } else if(input$type ==
               "Probability of Scoring") {
-      RE_season <- filter(RE, Season == season_n) %>%
-        select(Outs, Bases, Prob)
-      pivot_wider(RE_season,
-                  names_from = Bases,
+      RE_season <- filter(RE, Season %in% season_n) %>%
+        group_by(Outs, Bases) %>%
+        summarize(Prob = round(mean(Prob), 3),
+                  .groups = "drop") %>%
+      pivot_wider(names_from = Bases,
                   values_from = Prob) -> RE_season
-      RE_season <- RE_season[, c(1, 2, 6, 4, 3,
-                                 8, 7, 5, 9)]
+      RE_season <- RE_season[, c(1, 2, 6, 4, 8,
+                                 3, 7, 5, 9)]
 
       RE_season %>%
         flextable() %>%
@@ -160,19 +180,20 @@ server <- function(input, output) {
                                   "", ""),
                        colwidths = c(6, 1, 1, 1)) %>%
         set_caption(
-          caption = paste(season_n,
+          caption = paste(season_title,
               "Probability of Scoring Matrix")) %>%
         theme_vader() %>%
         autofit() %>%
         htmltools_value()
     } else {
-      RE_season <- filter(RE, Season == season_n) %>%
-        select(Outs, Bases, Prob2)
-      pivot_wider(RE_season,
-                  names_from = Bases,
+      RE_season <- filter(RE, Season %in% season_n) %>%
+        group_by(Outs, Bases) %>%
+        summarize(Prob2 = round(mean(Prob2), 3),
+                  .groups = "drop") %>%
+      pivot_wider(names_from = Bases,
                   values_from = Prob2) -> RE_season
-      RE_season <- RE_season[, c(1, 2, 6, 4, 3,
-                                 8, 7, 5, 9)]
+      RE_season <- RE_season[, c(1, 2, 6, 4, 8,
+                                 3, 7, 5, 9)]
 
       RE_season %>%
         flextable() %>%
@@ -180,7 +201,7 @@ server <- function(input, output) {
                                   "", ""),
                        colwidths = c(6, 1, 1, 1)) %>%
         set_caption(
-          caption = paste(season_n,
+          caption = paste(season_title,
                           "Probability of Scoring 2+ Runs Matrix")) %>%
         theme_vader() %>%
         autofit() %>%
@@ -189,9 +210,9 @@ server <- function(input, output) {
   })
 
   output$lm_fit <- renderUI({
-    req(input$season)
+    req(input$seasons)
 
-    season_n <- as.numeric(input$season)
+    season_n <- input$seasons[1]:input$seasons[2]
 
     if(input$type == "Expected Runs"){
     make_fit(RE, season_n, type = "RE") %>%
@@ -217,15 +238,18 @@ server <- function(input, output) {
   })
 
   output$plot <- renderPlot({
+
+    season_n <- input$seasons[1]:input$seasons[2]
+
     if(input$type == "Expected Runs"){
-      make_plot(RE, as.numeric(input$season),
+      make_plot(RE, season_n,
                                type = "RE")
     } else if(input$type ==
               "Probability of Scoring") {
-      make_plot(RE, as.numeric(input$season),
+      make_plot(RE, season_n,
                                type = "P")
     } else {
-      make_plot(RE, as.numeric(input$season),
+      make_plot(RE, season_n,
                 type = "P2")
     }
   })
