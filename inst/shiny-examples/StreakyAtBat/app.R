@@ -19,7 +19,7 @@ retro2019 %>%
   inner_join(People, c("BAT_ID" = "retroID")) %>%
   mutate(Name = paste(nameFirst, nameLast)) %>%
   arrange(nameLast) %>%
-  select(Name, BAT_ID) -> S1
+  dplyr::select(Name, BAT_ID) -> S1
 
 #############################################
 
@@ -91,7 +91,7 @@ spacings_sim <- function(retrodata,
     df %>%
       mutate(N = row_number(),
              BAT_ID = streak_data$BAT_ID[1]) %>%
-      select(BAT_ID, N, Spacing)
+      dplyr::select(BAT_ID, N, Spacing)
   }
   require(Lahman)
 
@@ -169,7 +169,7 @@ geometric_plot_app <- function(retrodata,
     df %>%
       mutate(N = row_number(),
              BAT_ID = streak_data$BAT_ID[1]) %>%
-      select(BAT_ID, N, Spacing)
+      dplyr::select(BAT_ID, N, Spacing)
   }
   require(Lahman)
 
@@ -273,7 +273,7 @@ moving_average_plot <- function(retrodata,
   subtitle <- paste("Width = ", width)
   the_title <- paste(name, type)
 
-  d <- select(d,
+  d <- dplyr::select(d,
               BAT_ID, Width, Type,
               GAME_ID, INN_CT, EVENT_CD,
               AB_number, Outcome,
