@@ -7,7 +7,6 @@ library(readr)
 
 Beta <- twentyyears_RA
 Beta$Bases <- gsub("[“”]", "", Beta$Bases)
-
 Beta$Outs <- as.character(Beta$Outs)
 
 table_advantage <- function(Beta, seasons){
