@@ -22,15 +22,16 @@ logit_work <- function(Observed){
     logits <- log(cum_prob / (1 - cum_prob))
     logits[1:4]
   }
-  apply(observed, 2, compute_logits)
+  L_20_seasons <- apply(observed, 2, compute_logits)
+  data.frame(L_20_seasons) %>%
+    mutate(Breakpoint = 1:4)
 }
-compare_logit_plot_many <- function(L_20_seasons,
-                                    states){
+compare_logit_plot_many <- function(L_20,
+                                    states,
+                                    bases_outs = "bases",
+                                    logit_type = "<="){
 
   require(purrr)
-
-  L_20 <- data.frame(L_20_seasons) %>%
-    mutate(Breakpoint = 1:4)
 
   cols <- c( paste("X", states, ".0", sep = ""),
              paste("X", states, ".1", sep = ""),
@@ -58,18 +59,28 @@ compare_logit_plot_many <- function(L_20_seasons,
 
   breakpoints <- c("0/1", "1/2", "2/3", "3/4+")
 
-  ggplot(Many_States,
-         aes(Breakpoint, Logit, color = Bases)) +
-    geom_point(size = 4) + geom_line() +
-    facet_wrap(~ Outs) +
+  if(bases_outs == "bases"){
+    p1 <- ggplot(Many_States,
+                 aes(Breakpoint, Logit, color = Bases)) +
+      geom_point(size = 4) + geom_line() +
+      facet_wrap(~ Outs)
+  } else {
+    p1 <- ggplot(Many_States,
+                 aes(Breakpoint, Logit, color = Outs)) +
+      geom_point(size = 4) + geom_line() +
+      facet_wrap(~ Bases)
+  }
+  p1 <- p1 +
     ylab("Cumulative Logit") +
-    ggtitle("Observed Cumulative Logits") +
+    ggtitle(paste("Observed Cumulative Logits P(Runs ",
+                  logit_type, " j)", sep = "")) +
     theme(text=element_text(size=18)) +
     scale_x_continuous(breaks = 1:4,
                        labels = breakpoints) +
     theme(plot.title = element_text(colour = "blue",
                                     size = 18,
                                     hjust = 0.5, vjust = 0.8, angle = 0))
+  print(p1)
 }
 table_advantage <- function(Beta, seasons){
 
@@ -99,13 +110,12 @@ table_advantage <- function(Beta, seasons){
 Beta <- twentyyears_RA
 Beta$Bases <- gsub("[“”]", "", Beta$Bases)
 Beta$Outs <- as.character(Beta$Outs)
-
 S <- twenty_seasons_counts
 S %>%
   group_by(STATE, O_RUNS.ROI) %>%
   summarize(N = sum(N),
             .groups = "drop") -> S_20_seasons
-L_20_seasons <- logit_work(S_20_seasons)
+L_20 <- logit_work(S_20_seasons)
 bases <- c("000", "100", "020", "120",
            "003", "103", "023", "123")
 
@@ -118,7 +128,15 @@ ui <- fluidPage(
                          "Selected Runners on Base:",
                          choices = bases,
                          selected = c("000", "100"),
-                         inline = FALSE)
+                         inline = FALSE),
+      radioButtons("logit_type",
+                   "Select Logit Type:",
+                   choices = c("<=", ">"),
+                   inline = TRUE),
+      radioButtons("outs_bases",
+                    "Compare Bases or Outs:",
+                    choices = c("bases", "outs"),
+                    inline = TRUE)
     ),
     mainPanel(
       h4("Runs Advantages from Ordinal Model:"),
@@ -147,7 +165,12 @@ server <- function(input, output) {
     bases <- ifelse(bases == "123", "111", bases)
     bases <- ifelse(bases == "003", "001", bases)
 
-    compare_logit_plot_many(L_20_seasons, bases)
+    if(input$logit_type == ">"){
+      L_20[, 1:24] <- - L_20[, 1:24]
+    }
+    compare_logit_plot_many(L_20, bases,
+                            input$outs_bases,
+                            input$logit_type)
 })
 }
 
