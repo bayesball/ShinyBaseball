@@ -26,18 +26,19 @@ logit_work <- function(Observed){
   data.frame(L_20_seasons) %>%
     mutate(Breakpoint = 1:4)
 }
-compare_logit_plot_many <- function(L_20,
-                                    states,
-                                    bases_outs = "bases",
-                                    logit_type = "<="){
+compare_logit_plot3 <- function(C_all,
+                                states,
+                                bases_outs = "bases",
+                                logit_type = "<="){
 
-  require(purrr)
+  require(tidyr)
+  require(ggplot2)
 
   cols <- c( paste("X", states, ".0", sep = ""),
              paste("X", states, ".1", sep = ""),
              paste("X", states, ".2", sep = ""))
 
-  many_states <- L_20[, c("Breakpoint", cols)]
+  many_states <- C_all[, c("Type", "Breakpoint", cols)]
   N <- length(cols)
 
   restate <- function(state){
@@ -63,17 +64,18 @@ compare_logit_plot_many <- function(L_20,
     p1 <- ggplot(Many_States,
                  aes(Breakpoint, Logit, color = Bases)) +
       geom_point(size = 4) + geom_line() +
-      facet_wrap(~ Outs)
+      facet_wrap(Type ~ Outs)
   } else {
     p1 <- ggplot(Many_States,
                  aes(Breakpoint, Logit, color = Outs)) +
       geom_point(size = 4) + geom_line() +
-      facet_wrap(~ Bases)
+      facet_wrap(Type ~ Bases)
   }
   p1 <- p1 +
     ylab("Cumulative Logit") +
-    ggtitle(paste("Observed Cumulative Logits P(Runs ",
+    ggtitle(paste("Cumulative Logits P(Runs ",
                   logit_type, " j)", sep = "")) +
+    xlab("Breakpoint (j | j + 1)") +
     theme(text=element_text(size=18)) +
     scale_x_continuous(breaks = 1:4,
                        labels = breakpoints) +
@@ -82,46 +84,25 @@ compare_logit_plot_many <- function(L_20,
                                     hjust = 0.5, vjust = 0.8, angle = 0))
   print(p1)
 }
-table_advantage <- function(Beta, seasons){
 
-  Beta %>%
-    filter(Season %in% seasons) %>%
-    group_by(Bases, Outs) %>%
-    summarize(Coef = mean(Coef),
-              Bases_Score = first(Bases_Score),
-              .groups = "drop") ->
-    Beta_summary
-
-  create_table <- function(DF){
-    DF <- DF[c(1:3,
-               13:15, 7:9, 19:21,
-               4:6, 16:18, 10:12,
-               22:24), ]
-
-    M <- matrix(round(DF$Coef, 2), 3, 8)
-    dimnames(M) <- list(c("0", "1", "2"),
-                        c("000", "100", "020", "120",
-                          "003", "103", "023", "123"))
-    M
-  }
-  create_table(Beta_summary)
-}
-
-########################################
-Beta <- twentyyears_RA
-Beta$Bases <- gsub("[“”]", "", Beta$Bases)
-Beta$Outs <- as.character(Beta$Outs)
-########################################
+#########################
 S <- twenty_seasons_counts
 S %>%
   group_by(STATE, O_RUNS.ROI) %>%
   summarize(N = sum(N),
             .groups = "drop") -> S_20_seasons
 L_20 <- logit_work(S_20_seasons)
+L_20 %>%
+  mutate(Type = "Observed") -> L_20
+
+S1 <- ordinal_model_logits %>%
+  mutate(Type = "Model") -> S1
+
+L_all <- rbind(L_20, S1)
+
 bases <- c("000", "100", "020", "120",
            "003", "103", "023", "123")
-########################################
-
+############################
 ui <- fluidPage(
   titlePanel("Logit Comparison of Run Scoring Across States: 2000-2019"),
   sidebarLayout(
@@ -142,22 +123,13 @@ ui <- fluidPage(
                     inline = TRUE)
     ),
     mainPanel(
-      h4("Runs Advantages from Ordinal Model:"),
-      tableOutput("runs_advantage"),
-      plotOutput("plot"))
+      plotOutput("plot",
+                 height = '550px'))
   )
 )
 
 server <- function(input, output) {
-  output$runs_advantage <- renderTable({
 
-    season_n <- 2000:2019
-    d <- as.data.frame(table_advantage(Beta,
-                    season_n))
-    d$Outs <- c(0, 1, 2)
-    d[, c(9, 1:8)]
-
-  })
   output$plot <- renderPlot({
     req(input$sel_bases)
     bases <- input$sel_bases
@@ -169,11 +141,12 @@ server <- function(input, output) {
     bases <- ifelse(bases == "003", "001", bases)
 
     if(input$logit_type == ">"){
-      L_20[, 1:24] <- - L_20[, 1:24]
+      L_all[, 1:24] <- - L_all[, 1:24]
     }
-    compare_logit_plot_many(L_20, bases,
-                            input$outs_bases,
-                            input$logit_type)
+    compare_logit_plot3(L_all,
+                        bases,
+                        input$outs_bases,
+                        input$logit_type)
 })
 }
 
