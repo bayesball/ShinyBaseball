@@ -1,0 +1,13 @@
+name: BrushingLaunchVariables
+title: BrushingLaunchVariables
+username:
+account: bayesball
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8129542
+bundleId: 6774444
+url: https://bayesball.shinyapps.io/BrushingLaunchVariables/
+when: 1674680633.13762
+lastSyncTime: 1674680633.13764
+asMultiple: FALSE
+asStatic: FALSE
