@@ -1,15 +1,19 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
-library(stringr)
 library(readr)
 
-#S <- read_csv("runner_advancement_12.csv")
+S1 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/runner_advancement_1.csv")
 
 plot_advancement_single <- function(S, runners,
                                     type){
 
-  # runners is either "100" or "010" or "110"
+  # limit to singles hit to the field
+  S %>% filter(Season <= 2019) %>%
+         mutate(Field = substr(EVENT_TX, 1, 2)) %>%
+         filter(Field %in% c("S7", "S8", "S9")) -> S
+
+  # runners is either "100" or "020" or "120"
 
   # type can be
   # ----------------------------------
@@ -17,17 +21,24 @@ plot_advancement_single <- function(S, runners,
   # home -- break down by home and away
   # margin -- close or not close score
   # inning -- early or late
+  # outfield -- either S7, S8, S9
 
   if(runners == "100"){
     S %>%
+      filter(Runner1 == TRUE,
+             Runner2 == FALSE) %>%
       mutate(Two_Bases = grepl("1-3", EVENT_TX)) -> S
   }
-  if(runners == "010"){
+  if(runners == "020"){
     S %>%
+      filter(Runner1 == FALSE,
+             Runner2 == TRUE) %>%
       mutate(Two_Bases = grepl("2-H", EVENT_TX)) -> S
   }
-  if(runners == "110"){
+  if(runners == "120"){
     S %>%
+      filter(Runner1 == TRUE,
+             Runner2 == TRUE) %>%
       mutate(First_Runner = grepl("1-3", EVENT_TX),
              Second_Runner = grepl("2-H", EVENT_TX),
              Two_Bases = First_Runner * Second_Runner) -> S
@@ -44,15 +55,25 @@ plot_advancement_single <- function(S, runners,
     S %>%
       mutate(Type = as.character(Outs)) -> S
   }
-  if(type == "margin"){
+  if(type == "close"){
     S %>%
-      mutate(Type = ifelse(Margin <= 1, "Close",
-                           "Not Close")) -> S
+      mutate(Type = ifelse(Margin <= 1, "<= 1 Run",
+                           "> 1 Run")) -> S
   }
-  if(type == "inning"){
+  if(type == "late_inning"){
     S %>%
-      mutate(Type = ifelse(INN_CT >=8, "Late",
-                           "Early")) -> S
+      mutate(Type = ifelse(INN_CT >= 8, ">= 8",
+                           "< 8")) -> S
+  }
+  if(type == "close_and_late"){
+    S %>%
+      mutate(Type = ifelse(Margin <= 1 & INN_CT >= 8, 
+                           "yes",
+                           "no")) -> S
+  }
+  if(type == "outfield"){
+    S %>%
+      mutate(Type = Field) -> S
   }
 
   S %>%
@@ -72,14 +93,15 @@ plot_advancement_single <- function(S, runners,
                 method = "loess",
                 formula = "y ~ x") +
     theme(text=element_text(size=18)) +
-    labs(title = "Runner Advancement with a Single",
+    labs(title = "Runner Advancement with a Single
+to Outfield: 2000-2019",
          subtitle = the_title) +
     theme(plot.title = element_text(colour = "blue",
-                          size = 18,
-                 hjust = 0.5, vjust = 0.8, angle = 0),
+                                    size = 16,
+                                    hjust = 0.5, vjust = 0.8, angle = 0),
           plot.subtitle = element_text(colour = "red",
-                          size = 18,
-                 hjust = 0.5, vjust = 0.8, angle = 0)) +
+                                       size = 16,
+                                       hjust = 0.5, vjust = 0.8, angle = 0)) +
     ylab("Pct Taking Extra Base")
 }
 
@@ -87,40 +109,32 @@ plot_advancement_single <- function(S, runners,
 ui <- fluidPage(
   theme = shinythemes::shinytheme("united"),
   column(4, wellPanel(
-  h3(id="big-heading", "Runner Advancement"),
-  p("EXTRA BASE: "),
-  p("100: 1-3"),
-  p("010: 2-H"),
-  p("110: 1-3 and 2-H"),
-  tags$style(HTML("#big-heading{color: blue;}")),
+    h3(id="big-heading", "Runner Advancement"),
+    p("EXTRA BASE: "),
+    p("100: 1-3"),
+    p("020: 2-H"),
+    p("120: 1-3 AND 2-H"),
   radioButtons("runners", "Runners on Base:",
-               c("100", "010", "110"),
+               c("100", "020", "120"),
                inline = TRUE),
   radioButtons("type", "Situational Effect:",
-               c("home", "inning",
-                 "margin", "outs"),
+               c("home", "late_inning",
+                 "close", "close_and_late",
+                 "outs", "outfield"),
                inline = TRUE)
   )),
   column(8,
          plotOutput("plot",
-                    height = '450px')
+                    width = '600px')
         )
 )
 
 server <- function(input, output, session) {
 
-  observeEvent(input$minIP, {
-    updateSelectInput(inputId = "name",
-                      choices =
-                SelectPlayers(sc2022ip, input$minIP)$Name)
-  })
-
   output$plot <- renderPlot({
-
-    plot_advancement_single(runner_advancement_12,
+    plot_advancement_single(S1,
                             input$runners,
                             input$type)
-
     }, res = 96)
 }
 
