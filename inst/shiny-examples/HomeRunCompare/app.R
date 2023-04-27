@@ -15,6 +15,7 @@ date_2021_hi <- current_date - 1
 # read in statcast dataset
 sc_2021 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast2021.csv")
 sc_2022 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast_2022.csv")
+sc_2023 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast_2023.csv")
 scip <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/SC_BB_mini.csv")
 
 # adjust 2021 date if necessary
@@ -35,11 +36,17 @@ sc_2022 %>%
   select(game_year, game_date, launch_angle,
          launch_speed, HR) ->
   scip_2022
+sc_2023 %>%
+  mutate(HR = ifelse(events == "home_run", 1, 0),
+         game_date = Game_Date)  %>%
+  select(game_year, game_date, launch_angle,
+         launch_speed, HR) ->
+  scip_2023
 
 # merge two datasets
 rbind(scip[, c(1:4, 6)], scip_2021,
-      scip_2022)  %>%
-  filter(game_year %in% 2015:2022) -> scip
+      scip_2022, scip_2023)  %>%
+  filter(game_year %in% 2015:2023) -> scip
 
 # want HR variable to be character
 scip$HR <- ifelse(scip$HR == 1,
@@ -131,14 +138,14 @@ ui <- fluidPage(
                    label = "Select First Season:",
                    choices = c("2015", "2016", "2017",
                              "2018", "2019", "2020",
-                             "2021", "2022"),
+                             "2021", "2022", "2023"),
                            selected = "2019",
                            inline = TRUE),
       radioButtons("year2",
                    label = "Select Second Season:",
                    choices = c("2015", "2016", "2017",
                                "2018", "2019", "2020",
-                               "2021", "2022"),
+                               "2021", "2022", "2023"),
                    selected = "2021",
                    inline = TRUE),
       radioButtons("stat",

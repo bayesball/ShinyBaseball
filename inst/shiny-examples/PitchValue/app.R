@@ -7,7 +7,11 @@ library(metR)
 library(ggdensity)
 
 # uses datafile sc2019_pv in the data folder
+# or read from Github
+sc2019_pv <- read.table("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/sc2019_pv.txt")
 
+# app is live at https://bayesball.shinyapps.io/PitchValue/
+#
 add_zone <- function(Color = "red"){
   topKzone <- 3.5
   botKzone <- 1.6
@@ -58,7 +62,7 @@ contour_graph <- function(df, L, title){
                           y=plate_z,
                           z=lp),
                       breaks=c(L),
-                      size=1.5) +
+                      linewidth=1.5) +
     scale_fill_distiller(palette="Spectral") +
     add_zone("black") +
     xlim(-1.5, 1.5) +

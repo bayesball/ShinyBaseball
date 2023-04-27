@@ -1,5 +1,7 @@
 library(shiny)
 
+# https://bayesball.shinyapps.io/PredictHomeRuns/
+
 # read data from Github site
 
 data_work <- function(){
@@ -9,6 +11,7 @@ data_work <- function(){
 
   sc_2021 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast2021.csv")
   sc_2022 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast_2022.csv")
+  sc_2023 <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/statcast_2023.csv")
   sc_old <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/main/SC_BB_mini.csv")
 
   names(sc_old)[2] <- "Game_Date"
@@ -26,7 +29,13 @@ data_work <- function(){
     select(game_year, Game_Date, launch_angle,
            launch_speed, events, HR, H) ->
     sc_2022
-  sc <- rbind(sc_old, sc_2021, sc_2022)
+  sc_2023 %>%
+    mutate(HR = ifelse(events == "home_run", 1, 0),
+           H = ifelse(events %in% hits, 1, 0))  %>%
+    select(game_year, Game_Date, launch_angle,
+           launch_speed, events, HR, H) ->
+    sc_2023
+  sc <- rbind(sc_old, sc_2021, sc_2022, sc_2023)
 
   sc %>%
     mutate(Season = year(Game_Date))
@@ -77,12 +86,17 @@ gam_many_seasons_A <- function(scip,
 
   # implements predictions for each season in
   # vector pseasons
+
+  # recode March games to April
+
   OUT <- NULL
   ACTUAL <- NULL
   for(season in pseasons){
-    scip2 <- filter(scip,
-                    Season == season,
-                    month(Game_Date) == Month)
+    scip2 <- scip %>%
+             mutate(the_month = ifelse(month(Game_Date) == 3,
+                            4, month(Game_Date))) %>%
+             filter(Season == season,
+                    the_month == Month)
     out <- predict_home_runs_2(fit1, scip2)
     out$Season <- paste(season, "Season")
     OUT <- rbind(OUT, out)
@@ -125,10 +139,10 @@ gam_many_seasons_B <- function(results,
  #   geom_histogram(bins = nbins,
  #                 color = "white",
  #                 fill = "red") +
-    geom_density(size = 1.5,
+    geom_density(linewidth = 1.5,
                  color = "red") +
     geom_vline(aes(xintercept = Actual),
-               size = 2) +
+               linewidth = 2) +
     facet_wrap(~ Season, ncol = 1) +
     labs(title = paste("Predicting In-Play HR Rate in",
                        results$month,
@@ -149,7 +163,7 @@ gam_many_seasons_B <- function(results,
     xlab("Predicted Home Run Rate") +
     geom_vline(aes(xintercept = results$TARGET),
                linetype = "twodash",
-               size = 2,
+               linewidth = 2,
                color = "blue") +
     annotate(geom = "text",
              x = results$TARGET + adjust_x * .7,
@@ -181,13 +195,15 @@ ui <- fluidPage(
       radioButtons("b_season",
                    "Select Ball (Model) Season:",
                    choices = c("2015", "2016", "2017",
-                     "2018", "2019", "2021", "2022"),
+                     "2018", "2019", "2021", "2022",
+                     "2023"),
                    selected = "2018",
                    inline = TRUE),
       checkboxGroupInput("p_season",
                          "Select Prediction Seasons:",
                    choices = c("2015", "2016", "2017",
-                    "2018", "2019", "2021", "2022"),
+                    "2018", "2019", "2021", "2022",
+                    "2023"),
                    selected = c("2019", "2021"),
                    inline = TRUE),
       sliderInput("month", "Select Month:",
