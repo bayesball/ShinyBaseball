@@ -1,4 +1,6 @@
 # app to compute brushed home run rates
+# currently live at https://bayesball.shinyapps.io/HomeRunLaunchVariables/
+
 library(shiny)
 library(lubridate)
 library(mgcv)
@@ -9,6 +11,11 @@ load("allfits.Rdata") # list of 18 fits
 df <- data.frame(j = 1:18,
                  Season = rep(c(2019, 2021, 2022), each = 6),
                  Month = rep(4:9, 3))
+
+month_table <- data.frame(Month = c("April", "May", "June",
+                                    "July", "August",
+                                    "September"),
+                          n_Month = 4:9)
 
 # data is read from Github repository
 
@@ -101,7 +108,8 @@ ui <- fluidPage(
                           bootswatch = "superhero"),
   fluidRow(
     column(4, wellPanel(
-      h5("Brushing Home Run Rates on Balls in Play in Statcast Era 2015-2023"),
+      h4("Brushing Home Run Rates on Balls in Play in Statcast Era"),
+      hr(),
       dateRangeInput("daterange", "Select Date Range:",
                      start = "2023-04-01",
                      end   = today()),
@@ -111,24 +119,20 @@ ui <- fluidPage(
       sliderInput("rY", "Selext Range of Exit Velocity:",
                   min = 80, max = 120,
                   value = c(95, 110)),
-      radioButtons("year",
-                   label = "Select Model (Ball) Season:",
-                   choices = c("2019", "2021", "2022"),
-                   selected = "2022",
-                   inline = TRUE),
+      hr(),
       radioButtons("month",
-                   label = "Select Model (Ball) Month:",
-                   choices = c("4", "5", "6",
-                               "7", "8", "9"),
-                   selected = "4",
+                   label = "Select Month (Ball Model Prediction):",
+                   choices = month_table$Month,
+                   selected = "April",
                    inline = TRUE)
     )),
     column(8,
             plotOutput("plot1a",
                        brush = brushOpts("plot_brush",
                                fill = "#0000ff"),
-                    height = "500px"),
-           tableOutput("data")
+                    height = "400px"),
+           tableOutput("data"),
+           tableOutput("data2")
       )
       )
 )
@@ -157,30 +161,68 @@ server <- function(input, output, session) {
     ls <- paste("(", min(sc1$launch_speed), ", ",
                 max(sc1$launch_speed), ")", sep = "")
 
-    df %>%
-      filter(Season == input$year, Month == input$month) %>%
-      pull(j) -> jj
-    sc1$Prob <- predict(fit[[jj]], sc1, type = "response")
-
     hr <- sum(sc1$events == "home_run")
     bip <- nrow(sc1)
-    e_hr <- sum(sc1$Prob)
-    z <- (hr - e_hr) / sqrt(e_hr)
 
     data.frame(Launch_Angle = la,
                Exit_Velocity = ls,
-               BIP = bip,
+               Balls_in_Play = bip,
                HR = hr,
-               Rate = hr / bip,
-               Model = paste(input$month, input$year,
-                             sep = "/"),
-               Pred = e_hr / bip,
-               Z = z)
+               HR_Rate = hr / bip)
 
   }, digits = 3, width = '75%', align = 'c',
-  bordered = TRUE,
-  caption = "Brushed Region Stats",
-  caption.placement = "top")
+  bordered = TRUE)
+
+  output$data2 <- renderTable({
+    req(input$plot_brush)
+
+    scip2 <- subset_data(scip, input$rX, input$rY,
+                         input$daterange[1],
+                         input$daterange[2])
+    sc1 <- brushedPoints(scip2,
+                         input$plot_brush)
+
+    la <- paste("(", min(sc1$launch_angle), ", ",
+                max(sc1$launch_angle), ")", sep = "")
+    ls <- paste("(", min(sc1$launch_speed), ", ",
+                max(sc1$launch_speed), ")", sep = "")
+
+    month_table %>%
+      filter(Month == input$month) %>%
+      pull(n_Month) -> i_month
+
+    df %>%
+      filter(Season == 2019, Month == i_month) %>%
+      pull(j) -> jj1
+    sc1$Prob1 <- predict(fit[[jj1]], sc1, type = "response")
+    df %>%
+      filter(Season == 2021, Month == i_month) %>%
+      pull(j) -> jj2
+    sc1$Prob2 <- predict(fit[[jj2]], sc1, type = "response")
+    df %>%
+      filter(Season == 2022, Month == i_month) %>%
+      pull(j) -> jj3
+    sc1$Prob3 <- predict(fit[[jj3]], sc1, type = "response")
+
+    hr <- sum(sc1$events == "home_run")
+    bip <- nrow(sc1)
+    e_hr1 <- sum(sc1$Prob1)
+    z1 <- (hr - e_hr1) / sqrt(e_hr1)
+
+    e_hr2 <- sum(sc1$Prob2)
+    z2 <- (hr - e_hr2) / sqrt(e_hr2)
+
+    e_hr3 <- sum(sc1$Prob3)
+    z3 <- (hr - e_hr3) / sqrt(e_hr3)
+
+    data.frame(Ball_Model = paste(input$month,
+                             c(2019, 2021, 2022)),
+               Observed_Rate = hr / bip,
+               Predicted_Rate =  c(e_hr1, e_hr2, e_hr3) / bip,
+               Z_Stat = c(z1, z2, z3))
+
+  }, digits = 3, width = '75%', align = 'c',
+  bordered = TRUE)
 }
 
 shinyApp(ui = ui, server = server)
