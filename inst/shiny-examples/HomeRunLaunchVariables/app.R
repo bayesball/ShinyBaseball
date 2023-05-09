@@ -101,6 +101,7 @@ make_plot <- function(scip2, date1, date2){
 
 # read in statcast dataset
 scip <- data_work()
+last_date <- max(scip$Game_Date)
 
 # shiny app
 ui <- fluidPage(
@@ -112,7 +113,7 @@ ui <- fluidPage(
       hr(),
       dateRangeInput("daterange", "Select Date Range:",
                      start = "2023-04-01",
-                     end   = today()),
+                     end   = last_date),
       sliderInput("rX", "Select Range of Launch Angle:",
                   min = 0, max = 50,
                   value = c(20, 40)),

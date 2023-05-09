@@ -44,11 +44,11 @@ predict_hr <- function(prior, y_n, mu_sigma,
   ggplot(S, aes(ys, percent)) +
     geom_segment(mapping = aes(xend = ys,
                                yend = 0),
-                 size = 3) +
+                 linewidth = 3) +
     geom_segment(data = filter(S, y_all >= 62),
                  mapping = aes(xend = ys,
                                yend = 0),
-                 size = 3, color = "red") +
+                 linewidth = 3, color = "red") +
     ggtitle(paste("Mean Prediction:", y_n[1],
                   "+", round(SU$Mean - y_n[1], 1),
                   "=", round(SU$Mean, 1),
