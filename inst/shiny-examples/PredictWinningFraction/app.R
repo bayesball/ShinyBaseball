@@ -1,7 +1,16 @@
 # Shiny app to illustrate predicting performance of a MLB team in the following season
 
 library(shiny)
-library(LearnBayes)
+
+normal.select <- function (quantile1, quantile2){
+  p1 = quantile1$p
+  x1 = quantile1$x
+  p2 = quantile2$p
+  x2 = quantile2$x
+  sigma = (x1 - x2)/diff(qnorm(c(p2, p1)))
+  mu = x1 - sigma * qnorm(p1)
+  return(list(mu = mu, sigma = sigma))
+}
 
 predict_win_pct <- function(prior, y1){
   require(ggplot2)
@@ -142,3 +151,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
+
