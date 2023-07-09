@@ -1,5 +1,4 @@
-# app to compute brushed home run rates
-# currently live at https://bayesball.shinyapps.io/HomeRunLaunchVariables/
+# Shiny app to illustrate predicting performance of a MLB team in the following season
 
 library(shiny)
 library(LearnBayes)
