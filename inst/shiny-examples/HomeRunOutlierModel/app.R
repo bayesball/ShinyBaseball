@@ -11,7 +11,7 @@ collect_data <- function(minHR = 500){
     summarize(HR = sum(HR),
               AB = sum(AB)) |>
     arrange(desc(HR)) |>
-    filter(HR >= 500) -> top500
+    filter(HR >= minHR) -> top500
 
   People |>
     filter(playerID %in% top500$playerID) |>
@@ -94,15 +94,15 @@ construct_plot <- function(out2, name){
                                        hjust = 0.5, vjust = 0.8, angle = 0))
 }
 
-out <- collect_data(minHR = 500)
+out <- collect_data(minHR = 400)
 
 ui <- fluidPage(
     theme = shinythemes::shinytheme("slate"),
-    h2("Home Run Trajectories of the 500 HR Club"),
+    h2("Home Run Trajectories of the 400 HR Club"),
     column(
       3,
       selectInput("player",
-                  "Select Hitter from 500 HR Club:",
+                  "Select Hitter from 400 HR Club:",
                   choices =
                     out$top500$Player
       ),
@@ -115,7 +115,7 @@ ui <- fluidPage(
                   value = 1000,
                   step = 100),
       hr(),
-      p("Blue curve represents Poisson outlier random effects model fit using the Gibbs sampler methodology from Albert (1992).")
+      p("Blue curve represents Poisson outlier random effects quadratic model fit using the Gibbs sampler methodology from Albert (1992).")
     ),
     column(
       9,
