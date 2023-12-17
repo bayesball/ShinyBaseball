@@ -73,7 +73,12 @@ gibbs_outlier <- function(df, v = 5, iter = 1000,
               family = "poisson",
               data = df)
   df$r_fit <- fit2$fitted.values / df$AB
-  df
+
+  S <- list(Peak = max(df$m_rate),
+            Career = sum(df$m_rate * df$AB),
+            Obs_Peak = max(df$HR / df$AB),
+            Obs_Career = sum(df$HR))
+  list(df = df, S = S)
 }
 
 construct_plot <- function(out2, name){
@@ -115,13 +120,18 @@ ui <- fluidPage(
                   value = 1000,
                   step = 100),
       hr(),
-      p("Blue curve represents Poisson outlier random effects quadratic model fit using the Gibbs sampler methodology from Albert (1992).")
+      p("Blue curve represents Poisson outlier random effects
+        quadratic model fit using the Gibbs sampler methodology
+        from Albert (1992)."),
+      p("Table gives Observed and Model-Based estimates of
+        home run Peak and Career Ability measures")
     ),
     column(
       9,
       plotOutput("plot1",
                  height = "500px"
-      )
+      ),
+      tableOutput("data")
     )
   )
 
@@ -140,10 +150,27 @@ ui <- fluidPage(
         name <- filter(out$top500,
                        playerID == playerid) |>
           pull(Player)
-        construct_plot(out2, name)
+        construct_plot(out2$df, name)
       },
       res = 96
     )
+
+    output$data <- renderTable({
+      out$top500 |>
+        filter(Player == input$player) |>
+        pull(playerID) -> playerid
+
+      out2 <- gibbs_outlier(filter(out$season_data,
+                                   playerID == playerid),
+                            iter = input$iter,
+                            minAB = input$minAB)
+
+      data.frame(Estimate = c("Observed", "Model Based"),
+                 Peak = 100 * c(out2$S$Obs_Peak, out2$S$Peak),
+                 Career = c(out2$S$Obs_Career, out2$S$Career))
+    }, digits = 3, width = '75%', align = 'c',
+    bordered = TRUE)
+
   }
 
   shinyApp(ui = ui, server = server)
