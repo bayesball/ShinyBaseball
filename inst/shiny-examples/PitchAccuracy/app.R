@@ -14,6 +14,7 @@ pv_region <- function(scv,
   require(CalledStrike)
   require(ggforce)
   require(LearnBayes)
+  require(ggforce)
 
   xy <- rmnorm(500, c(x, z), diag(r ^ 2 * c(1, 1)))
   dxy <- data.frame(X = xy[, 1], Y = xy[, 2])
