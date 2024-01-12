@@ -2,7 +2,7 @@
 \alias{BallsStrikesEffects}
 
 \title{
-  Shiny App for Illustrating Berkson's Paradox
+  Shiny App for Illustrating Count Effects
 }
 \description{
   Shiny app to graph the passing through and final count effects of various hitting measures.
