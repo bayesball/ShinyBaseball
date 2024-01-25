@@ -193,7 +193,7 @@ ui <- fluidPage(
     column(
       3,
       selectInput("player",
-                  paste("Select Hitter (min BIP 200):"),
+                  paste("Select Hitter (min 200 BIP):"),
                   choices =
                     roster200$player_name,
                   selected = "Freeman, Freddie"
