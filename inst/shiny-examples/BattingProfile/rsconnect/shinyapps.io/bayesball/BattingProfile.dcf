@@ -1,0 +1,12 @@
+name: BattingProfile
+title: BattingProfile
+username: bayesball
+account: bayesball
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11040936
+bundleId: 8186687
+url: https://bayesball.shinyapps.io/BattingProfile/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
