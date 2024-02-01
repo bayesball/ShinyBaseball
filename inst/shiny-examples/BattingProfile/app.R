@@ -122,7 +122,8 @@ batting_profile <- function(sc_ip, batter_no,
       theme(plot.subtitle = element_text(colour = "red", size = 16,
                         hjust = 0.5, vjust = 0.8, angle = 0))
   }
-  bin_plot_scatter <- function(ff, P_breaks, LA_breaks, name) {
+  bin_plot_scatter <- function(ff, P_breaks, LA_breaks,
+                               name, stitle) {
     ggplot(ff, aes(x = phi1, y = launch_angle)) +
       geom_point() +
       geom_vline(
@@ -136,12 +137,15 @@ batting_profile <- function(sc_ip, batter_no,
       theme(text = element_text(size = 18)) +
       labs(x = "Adjusted Spray Angle (degrees)",
            y = "Launch Angle (degrees)",
-           title = paste("Batting Profile of", name)) +
+           title = paste("Batting Profile of", name),
+           subtitle = stitle) +
       #    theme(legend.position = "none") +
       scale_fill_gradientn(colours = colorspace::diverge_hcl(7)) +
       theme(plot.title = element_text(colour = "blue", size = 18,
                                       hjust = 0.5,
-                                      vjust = 0.8, angle = 0))
+                                      vjust = 0.8, angle = 0)) +
+      theme(plot.subtitle = element_text(colour = "red", size = 18,
+                                         hjust = 0.5, vjust = 0.8, angle = 0))
   }
   bin_plot <- function(S, PH_breaks, LA_breaks, label, name,
                        stitle = ""){
@@ -206,7 +210,8 @@ batting_profile <- function(sc_ip, batter_no,
                     E = BIP_Rate.x * BIP_player,
                     Z = round(Diff / sqrt(E), 1))
 
-  p0 <- bin_plot_scatter(ff, p_breaks, la_breaks, Name)
+  p0 <- bin_plot_scatter(ff, p_breaks, la_breaks, Name,
+                         stitle = "Scatterplot")
   p0a <- bin_plot(out_ff, p_breaks, la_breaks, BIP, Name,
                   stitle = "Balls in Play")
   p0b <- bin_plot_label(out_new, p_breaks, la_breaks,
