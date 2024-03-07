@@ -137,15 +137,15 @@ add_h_hr <- function(S){
 add_Z <- function(S){
   S |>
     mutate(Z_H = round(H / BIP /
-                         sqrt(H / BIP * (1 - H / BIP) / BIP), 1),
+                sqrt(H / BIP * (1 - H / BIP) / BIP), 1),
            Z_HR = round(HR / BIP /
-                          sqrt(HR / BIP * (1 - HR / BIP) / BIP), 1)
+                sqrt(HR / BIP * (1 - HR / BIP) / BIP), 1)
     )
 }
 
 ########
 ui <- fluidPage(
-    theme = shinythemes::shinytheme("slate"),
+    theme = shinythemes::shinytheme("cerulean"),
     h2("Binned In-Play Hit and Home Run Rates 2018-2023"),
     column(
       3,
@@ -155,7 +155,6 @@ ui <- fluidPage(
                     player_list$Name,
                   selected = player_list$Name[1]
       ),
-      hr(),
       radioButtons("n_bins", "Choose number of bins:",
                    c("4" = "4",
                      "5" = "5",
@@ -163,7 +162,6 @@ ui <- fluidPage(
                      "8" = "8",
                      "10" = "10"),
                    inline = TRUE),
-      hr(),
       radioButtons("type", "Choose what to display:",
                    c("Balls in Play" = "bip",
                      "Hit Counts" = "h_counts",
@@ -173,7 +171,10 @@ ui <- fluidPage(
                      "Home Run Counts" = "hr_counts",
                      "Home Run Rates" = "hr_rates",
                      "Home Run Z-Scores" = "z_hr",
-                     "Home Run Heat Map" = "heat_hr"))
+                     "Home Run Heat Map" = "heat_hr")),
+      radioButtons("round", "Round values?",
+                   c("No", "Yes"), "No",
+                   inline = TRUE)
     ),
     column(
       9,
@@ -200,7 +201,12 @@ ui <- fluidPage(
         out <- bin_rates(pdata, px_breaks, pz_breaks) |>
           add_Z()
 
-
+        if(input$round == "Yes"){
+          out$H_Rate <- round(out$H_Rate)
+          out$HR_Rate <- round(out$HR_Rate)
+          out$Z_H = round(out$Z_H)
+          out$Z_HR = round(out$Z_HR)
+        }
         if(input$type == "bip"){
           p <- bin_plot(out, px_breaks, pz_breaks, BIP,
                         name = input$player)
