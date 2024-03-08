@@ -56,7 +56,8 @@ bin_plot <- function(S, platex_breaks, platez_breaks, label,
       yintercept = platez_breaks,
       color = "blue"
     ) +
-    theme(text = element_text(size = 18)) +
+    coord_fixed() +
+    theme(text = element_text(size = 14)) +
     labs(x = "plate_x", y = "plate_z",
          title = enquo(label))  +
     theme(plot.title = element_text(colour = "blue", size = 18,
@@ -93,18 +94,22 @@ bin_plot_hm <- function(S, H = TRUE, Z = FALSE,
   if(H == TRUE & Z == FALSE){
     S$Rate <- S$H_Rate
     the_title <- "Hit Rate"
+    legend_title <- "Rate"
   }
   if(H == TRUE & Z == TRUE){
     S$Rate <- S$Z_H
     the_title <- "Z Hit Rate"
+    legend_title <- "Z"
   }
   if(H == FALSE & Z == FALSE){
     S$Rate <- S$HR_Rate
     the_title <- "HR Rate"
+    legend_title <- "Rate"
   }
   if(H == FALSE & Z == TRUE){
     S$Rate <- S$Z_HR
     the_title <- "Z HR Rate"
+    legend_title <- "Z"
   }
 
   S |>
@@ -124,7 +129,8 @@ bin_plot_hm <- function(S, H = TRUE, Z = FALSE,
                                     hjust = 0.5, vjust = 0.8, angle = 0)) +
     labs(subtitle = name) +
     theme(plot.subtitle = element_text(colour = "blue", size = 20,
-                                       hjust = 0.5, vjust = 0.8, angle = 0))
+                 hjust = 0.5, vjust = 0.8, angle = 0)) +
+    guides(fill = guide_legend(title = legend_title))
 }
 
 add_h_hr <- function(S){
@@ -135,11 +141,13 @@ add_h_hr <- function(S){
 }
 
 add_Z <- function(S){
+  p_H <- sum(S$H) / sum(S$BIP)
+  p_HR <- sum(S$HR) / sum(S$BIP)
   S |>
-    mutate(Z_H = round(H / BIP /
-                sqrt(H / BIP * (1 - H / BIP) / BIP), 1),
-           Z_HR = round(HR / BIP /
-                sqrt(HR / BIP * (1 - HR / BIP) / BIP), 1)
+    mutate(Z_H = round((H / BIP - p_H) /
+                sqrt(p_H * (1 - p_H) / BIP), 1),
+           Z_HR = round((HR / BIP - p_HR) /
+                sqrt(p_HR * (1 - p_HR) / BIP), 1)
     )
 }
 
@@ -201,6 +209,14 @@ ui <- fluidPage(
         out <- bin_rates(pdata, px_breaks, pz_breaks) |>
           add_Z()
 
+        if(input$type == "heat_h"){
+          p <- bin_plot_hm(out, H = TRUE, Z = TRUE,
+                           name = input$player)
+        }
+        if(input$type == "heat_hr"){
+          p <- bin_plot_hm(out, H = FALSE, Z = TRUE,
+                           name = input$player)
+        }
         if(input$round == "Yes"){
           out$H_Rate <- round(out$H_Rate)
           out$HR_Rate <- round(out$HR_Rate)
@@ -234,14 +250,6 @@ ui <- fluidPage(
         if(input$type == "z_hr"){
           p <- bin_plot(out, px_breaks, pz_breaks, Z_HR,
                         name = input$player)
-        }
-        if(input$type == "heat_h"){
-          p <- bin_plot_hm(out, H = TRUE, Z = TRUE,
-                           name = input$player)
-        }
-        if(input$type == "heat_hr"){
-          p <- bin_plot_hm(out, H = FALSE, Z = TRUE,
-                           name = input$player)
         }
         print(p)
       },
