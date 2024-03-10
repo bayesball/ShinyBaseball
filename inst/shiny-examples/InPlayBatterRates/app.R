@@ -29,11 +29,12 @@ bin_rates <- function(sc_ip, platex_breaks, platez_breaks) {
 }
 
 bin_plot <- function(S, platex_breaks, platez_breaks, label,
-                     name = "") {
+                     name = "", n_bins = 4) {
   require(dplyr)
   require(purrr)
   require(stringr)
   require(ggplot2)
+  size_font <- ifelse(n_bins <= 6, 8, 6)
   compute_bin_midpoint <- function(x) {
     x |>
       as.character() |>
@@ -47,7 +48,7 @@ bin_plot <- function(S, platex_breaks, platez_breaks, label,
       pz = map_dbl(PZ, compute_bin_midpoint)
     ) |>
     ggplot(aes(x = px, y = pz)) +
-    geom_text(aes(label = {{label}}), size = 8) +
+    geom_text(aes(label = {{label}}), size = size_font) +
     geom_vline(
       xintercept = platex_breaks,
       color = "blue"
@@ -182,7 +183,8 @@ ui <- fluidPage(
                      "Home Run Heat Map" = "heat_hr")),
       radioButtons("round", "Round values?",
                    c("No", "Yes"), "No",
-                   inline = TRUE)
+                   inline = TRUE),
+      downloadButton("downloadData", "Download Data")
     ),
     column(
       9,
@@ -225,37 +227,65 @@ ui <- fluidPage(
         }
         if(input$type == "bip"){
           p <- bin_plot(out, px_breaks, pz_breaks, BIP,
-                        name = input$player)
+                        name = input$player,
+                        n_bins = as.numeric(input$n_bins))
         }
         if(input$type == "h_counts"){
           p <- bin_plot(out, px_breaks, pz_breaks, H,
-                        name = input$player)
+                        name = input$player,
+                        n_bins = as.numeric(input$n_bins))
         }
         if(input$type == "hr_counts"){
           p <- bin_plot(out, px_breaks, pz_breaks, HR,
-                        name = input$player)
+                        name = input$player,
+                        n_bins = as.numeric(input$n_bins))
         }
         if(input$type == "h_rates"){
           p <- bin_plot(out, px_breaks, pz_breaks, H_Rate,
-                        name = input$player)
+                        name = input$player,
+                        n_bins = as.numeric(input$n_bins))
         }
         if(input$type == "hr_rates"){
           p <- bin_plot(out, px_breaks, pz_breaks, HR_Rate,
-                        name = input$player)
+                        name = input$player,
+                        n_bins = as.numeric(input$n_bins))
         }
         if(input$type == "z_hit"){
           p <- bin_plot(out, px_breaks, pz_breaks, Z_H,
-                        name = input$player)
+                        name = input$player,
+                        n_bins = as.numeric(input$n_bins))
         }
         if(input$type == "z_hr"){
           p <- bin_plot(out, px_breaks, pz_breaks, Z_HR,
-                        name = input$player)
+                        name = input$player,
+                        n_bins = as.numeric(input$n_bins))
         }
         print(p)
       },
       res = 96
     )
+    output$downloadData <- downloadHandler(
+      filename = "binned_output.csv",
+      content = function(file) {
+        player_list |>
+          filter(Name == input$player) |>
+          pull(key_mlbam) -> playerid
 
+        filter(scip, batter == playerid) |> add_h_hr() ->
+          pdata
+
+        px_breaks <- seq(-1.1, 1.1,
+                         length.out = as.numeric(input$n_bins) + 1)
+        pz_breaks <- seq(1.5, 3.6,
+                         length.out = as.numeric(input$n_bins) + 1)
+
+        out <- bin_rates(pdata, px_breaks, pz_breaks) |>
+          add_Z() |>
+          mutate(Player = input$player)
+
+        write.csv(out, file, row.names = FALSE)
+      }
+    )
   }
 
   shinyApp(ui = ui, server = server)
