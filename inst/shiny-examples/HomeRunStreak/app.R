@@ -14,56 +14,61 @@ retrod <- read_csv("https://raw.githubusercontent.com/bayesball/HomeRuns2021/mai
 streaky_player_BF_new <- function(year, retro_player, lK = 5){
   require(dplyr)
   require(BayesTestStreak)
-  
+
   names(retro_player) <- str_to_lower(names(retro_player))
-  
-  retro_player |> 
-    mutate(game_id = as.character(game_id))  |> 
+
+  retro_player |>
+    mutate(game_id = as.character(game_id))  |>
     filter(season == year) -> retro_player
-  
+
   streaky_measure <- function(retro_data, logK = lK) {
-    retro_data |> 
+    retro_data |>
       mutate(
         Outcome = ifelse(event_cd == 23, 1, 0),
         date = substr(game_id, 4, 12)
-      ) |> 
-      arrange(date) |> 
+      ) |>
+      arrange(date) |>
       bayes_factor_logK(logK)
   }
-  
-  retro_player |> 
+
+  retro_player |>
     summarize(bat_id = first(bat_id),
               Season = first(season),
               PA = n(),
               HR = sum(event_cd == 23)) -> S
-  
+
   if(S$HR > 0){
     lbf_out <-  streaky_measure(retro_player)$log_BF} else {
       lbf_out <- NA
     }
-  
-  S |> 
-    mutate(logBF = lbf_out)
+
+    S |>
+      mutate(logBF = lbf_out)
 }
 
 collect_streaky <- function(playerid, d, name = "",
                             lK = 5){
   require(purrr)
   require(ggplot2)
-  d |> 
+  d |>
     filter(BAT_ID == playerid) -> rdata
   player_seasons <- unique(rdata$Season)
   map(player_seasons, streaky_player_BF_new, rdata, lK) |>
     list_rbind() -> out
-  p <- ggplot(out, aes(Season, logBF)) +
-    geom_point(size = 3) +
-    geom_hline(yintercept = 0, linewidth = 1.5,
+  if(dim(out)[1] > 0){
+    p <- ggplot(out, aes(Season, logBF)) +
+      geom_point(size = 3) +
+      geom_hline(yintercept = 0, linewidth = 1.5,
                color = "red") +
-    ylab("log Bayes Factor") + 
-    ggtitle(paste(name, "Home Run Streak Patterns")) +
-    theme(text=element_text(size=18)) +
-    theme(plot.title = element_text(colour = "blue", size = 18,
-                                    hjust = 0.5, vjust = 0.8, angle = 0))
+      ylab("log Bayes Factor") +
+      ggtitle(paste(name, "Home Run Streak Patterns")) +
+      theme(text=element_text(size=18)) +
+      theme(plot.title = element_text(colour = "blue",
+                                      size = 18,
+                      hjust = 0.5, vjust = 0.8,
+                      angle = 0))} else {
+      p <- NULL
+      }
   list(out = out, p = p)
 }
 
@@ -96,16 +101,18 @@ ui <- fluidPage(
         Name <- names(plist)[plist == input$player]
         S <- collect_streaky(input$player, retrod,
                              name = Name)
-        print(S$p)
+        if(is.null(S$p) == FALSE){
+          print(S$p)
+        }
       },
       res = 96
     )
     output$downloadData <- downloadHandler(
       filename = "streak_output.csv",
       content = function(file) {
-       
+
         Name <- names(plist)[plist == input$player]
-        D <- collect_streaky(input$player, retrod)$out |> 
+        D <- collect_streaky(input$player, retrod)$out |>
           mutate(Name = Name)
 
         write.csv(D, file, row.names = FALSE)
