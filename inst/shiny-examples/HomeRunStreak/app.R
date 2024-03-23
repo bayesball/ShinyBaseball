@@ -61,12 +61,18 @@ collect_streaky <- function(playerid, d, name = "",
       geom_hline(yintercept = 0, linewidth = 1.5,
                color = "red") +
       ylab("log Bayes Factor") +
-      ggtitle(paste(name, "Home Run Streak Patterns")) +
+      labs(title = paste(name, "Home Run Streak Patterns"),
+           subtitle = paste("log K =", lK)) +
       theme(text=element_text(size=18)) +
       theme(plot.title = element_text(colour = "blue",
                                       size = 18,
                       hjust = 0.5, vjust = 0.8,
-                      angle = 0))} else {
+                      angle = 0)) +
+      theme(plot.subtitle = element_text(colour = "blue",
+                           size = 18,
+                             hjust = 0.5, vjust = 0.8,
+                                      angle = 0))
+      } else {
       p <- NULL
       }
   list(out = out, p = p)
@@ -82,9 +88,10 @@ ui <- fluidPage(
                   paste("Select Hitter Among Top 50 in Career Home Runs List:"),
                   choices = plist
       ),
+      sliderInput("lK", "Input log K for Streaky Model:", 1, 8, 5, step = 1),
       hr(),
       h4("Graph displays the log Bayes factor in support of a streaky model compared to a consistent model for all seasons of the player's career."),
-      h4("log BF = 0 indicates both models supported by data."),
+      h4("log BF = 0 indicates both models equally supported by data."),
       hr(),
       downloadButton("downloadData", "Download Data"),
     ),
@@ -100,7 +107,8 @@ ui <- fluidPage(
       {
         Name <- names(plist)[plist == input$player]
         S <- collect_streaky(input$player, retrod,
-                             name = Name)
+                             name = Name,
+                             lK = input$lK)
         if(is.null(S$p) == FALSE){
           print(S$p)
         }
@@ -112,8 +120,9 @@ ui <- fluidPage(
       content = function(file) {
 
         Name <- names(plist)[plist == input$player]
-        D <- collect_streaky(input$player, retrod)$out |>
-          mutate(Name = Name)
+        D <- collect_streaky(input$player, retrod,
+                             lK = input$lK)$out |>
+          mutate(Name = Name, logK = input$lK)
 
         write.csv(D, file, row.names = FALSE)
       }
